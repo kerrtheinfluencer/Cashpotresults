@@ -426,6 +426,94 @@ main {
 }
 .site-footer a { color: var(--gold); text-decoration: none; }
 
+/* ── INSTALL BANNER ────────────────────── */
+.install-banner {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #0d3d1f, #1a6b3c);
+  color: white;
+  padding: 1rem 1.25rem;
+  z-index: 200;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+  animation: slideUp 0.4s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.install-banner.show { display: block; }
+.install-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.install-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #0d3d1f;
+  font-family: var(--font-display);
+  flex-shrink: 0;
+}
+.install-text { flex: 1; }
+.install-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 0.1rem;
+}
+.install-sub {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.4;
+}
+.install-btn {
+  background: var(--gold);
+  color: #0d3d1f;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.install-btn:active { opacity: 0.8; }
+.install-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.install-close:hover { color: white; }
+.install-ios-steps {
+  display: none;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.8;
+}
+.install-ios-steps.show { display: block; }
+.install-ios-steps span { color: var(--gold); font-weight: 600; }
+
 /* ── UTILITY ────────────────────────────── */
 .badge {
   display: inline-block;
@@ -1130,5 +1218,95 @@ poll();
 setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}if(ns>=0)updateCountdown(ns)},1000);
 
 </script>
+<!-- Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-inner">
+    <div class="install-icon">CP</div>
+    <div class="install-text">
+      <div class="install-title">Install CashPotJA</div>
+      <div class="install-sub">Get instant results on your home screen</div>
+      <div class="install-ios-steps" id="iosSteps">
+        <span>1.</span> Tap the <span>Share</span> button below (&#8593;)<br>
+        <span>2.</span> Scroll down and tap <span>Add to Home Screen</span><br>
+        <span>3.</span> Tap <span>Add</span> in the top right
+      </div>
+    </div>
+    <button class="install-btn" id="installBtn" onclick="handleInstall()">Install</button>
+    <button class="install-close" onclick="dismissInstall()">&times;</button>
+  </div>
+</div>
+
+<script>
+// Install banner logic
+var deferredPrompt = null;
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+var isAndroid = /Android/.test(navigator.userAgent);
+var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+var dismissed = localStorage.getItem('cpja_install_dismissed');
+
+// Android: capture beforeinstallprompt
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner('android');
+});
+
+// Show banner after 3 seconds if not installed and not dismissed
+setTimeout(function() {
+  if (isStandalone || dismissed) return;
+  if (deferredPrompt) {
+    showInstallBanner('android');
+  } else if (isIOS) {
+    showInstallBanner('ios');
+  }
+}, 3000);
+
+function showInstallBanner(platform) {
+  var banner = document.getElementById('installBanner');
+  banner.classList.add('show');
+  if (platform === 'ios') {
+    document.getElementById('installBtn').textContent = 'How To';
+    document.getElementById('iosSteps').classList.remove('show');
+  } else {
+    document.getElementById('installBtn').textContent = 'Install';
+  }
+}
+
+function handleInstall() {
+  if (deferredPrompt) {
+    // Android native install
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(result) {
+      if (result.outcome === 'accepted') {
+        document.getElementById('installBanner').classList.remove('show');
+        localStorage.setItem('cpja_install_dismissed', '1');
+      }
+      deferredPrompt = null;
+    });
+  } else if (isIOS) {
+    // iOS: toggle step-by-step instructions
+    var steps = document.getElementById('iosSteps');
+    if (steps.classList.contains('show')) {
+      steps.classList.remove('show');
+      document.getElementById('installBtn').textContent = 'How To';
+    } else {
+      steps.classList.add('show');
+      document.getElementById('installBtn').textContent = 'Got It';
+    }
+  }
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('cpja_install_dismissed', '1');
+}
+
+// Also hide if already installed
+window.addEventListener('appinstalled', function() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('cpja_install_dismissed', '1');
+});
+</script>
+
 </body>
 </html>

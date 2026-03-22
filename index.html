@@ -472,7 +472,7 @@ main {
   .draw-number { width: 42px; height: 42px; font-size: 1.1rem; }
 }
 
-.draw-share{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.5rem;font-size:0.7rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;transition:all 0.15s}.draw-share:hover{border-color:var(--green);color:var(--green)}.draw-share:active{background:var(--green-pale)}
+.draw-share{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.5rem;font-size:0.7rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;transition:all 0.15s}.draw-share:hover{border-color:var(--green);color:var(--green)}
 .visitor-bar{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-card);border-bottom:1px solid var(--border);font-size:0.72rem;color:var(--text-dim)}.visitor-dot{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:pulse 2s infinite}.visitor-count{font-family:var(--font-mono);font-weight:600;color:var(--green)}
 </style>
 </head>
@@ -1003,6 +1003,9 @@ function getMergedDraws(date){
 }
 
 var SLOT_CUTOFFS=[8.75,10.75,13.25,15.25,17.25,20.67];
+// Expected draw number ranges per day: each day has 6 draws
+// Draw numbers increment sequentially. We track what we've already seen.
+var seenDrawNumbers=JSON.parse(localStorage.getItem("cpja_seen_draws")||"{}");
 
 function fetchLiveResults(){
   var target="https://www.jamaicaindex.com/lottery/results/cash-pot";
@@ -1014,19 +1017,44 @@ function fetchLiveResults(){
     var slots=["EARLYBIRD","MORNING","MIDDAY","MIDAFTERNOON","DRIVETIME","EVENING"];
     var ja=getJANow(),nowHour=ja.getHours()+ja.getMinutes()/60;
     var today=getJAToday(),yest=getYesterday();
-    var allDraws=[null,null,null,null,null,null];
-    for(var s=0;s<slots.length;s++){
-      var re=new RegExp(slots[s]+"</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<","i");
-      var m=html.match(re);
-      if(m){var num=parseInt(m[1]);if(num>=1&&num<=36)allDraws[slotMap[slots[s]]]=num}
-    }
+
+    // Extract draw number + result for each slot
+    // Pattern: SLOTNAME</b>...draw_no">#DRAWNUM</span>...bbb1...>NUMBER<
     var todayDraws=[null,null,null,null,null,null];
     var yesterdayDraws=[null,null,null,null,null,null];
-    for(var i=0;i<6;i++){
-      if(allDraws[i]===null)continue;
-      if(nowHour>=SLOT_CUTOFFS[i])todayDraws[i]=allDraws[i];
-      else yesterdayDraws[i]=allDraws[i];
+
+    for(var s=0;s<slots.length;s++){
+      // Get draw number and result number together
+      var re=new RegExp(slots[s]+'</b>[\\s\\S]*?draw_no["\'>]*>#?(\\d+)<[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
+      var m=html.match(re);
+      if(!m) continue;
+      var drawNum=m[1];
+      var num=parseInt(m[2]);
+      if(num<1||num>36) continue;
+
+      var slotIdx=slotMap[slots[s]];
+      var drawKey=today+"-"+slotIdx;
+
+      // Check if this draw number is new (not seen before)
+      if(seenDrawNumbers[drawKey]===drawNum){
+        // Same draw number as before — this is stale data, skip
+        // But still use it if we already accepted it
+        if(nowHour>=SLOT_CUTOFFS[slotIdx]) todayDraws[slotIdx]=num;
+        continue;
+      }
+
+      // New draw number! Check if time makes sense for today
+      if(nowHour>=SLOT_CUTOFFS[slotIdx]){
+        todayDraws[slotIdx]=num;
+        seenDrawNumbers[drawKey]=drawNum;
+      }else{
+        // This slot hasn't drawn yet today — result belongs to yesterday
+        yesterdayDraws[slotIdx]=num;
+      }
     }
+
+    localStorage.setItem("cpja_seen_draws",JSON.stringify(seenDrawNumbers));
+
     if(todayDraws.some(function(d){return d!==null}))liveResults[today]=todayDraws;
     if(yesterdayDraws.some(function(d){return d!==null})){
       if(!liveResults[yest])liveResults[yest]=[null,null,null,null,null,null];
@@ -1225,6 +1253,85 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
   base+=seed%30;
   document.getElementById("visitorCount").textContent=String(base);
 })();
+
+// ── Web Push Subscription ─────────────────────────────────────
+var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
+var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
+var SUPABASE_ANON_KEY="sb_publishable_BR1xjeDHtGQoAD_LaAWzGA_PV0rXIfD"; // Will need to be filled in
+
+function urlBase64ToUint8Array(base64String){
+  var padding="=".repeat((4-base64String.length%4)%4);
+  var base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  var raw=atob(base64);
+  var arr=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+
+function subscribeToPush(){
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)){
+    console.log("Push not supported");
+    return Promise.resolve(false);
+  }
+  return navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.getSubscription().then(function(existing){
+      if(existing)return existing;
+      return reg.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    });
+  }).then(function(sub){
+    if(!sub)return false;
+    // Save subscription to Supabase
+    var subJson=sub.toJSON();
+    if(SUPABASE_ANON_KEY){
+      return fetch(SUPABASE_URL+"/rest/v1/push_subscriptions",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_ANON_KEY,
+          "Authorization":"Bearer "+SUPABASE_ANON_KEY,
+          "Prefer":"resolution=merge-duplicates"
+        },
+        body:JSON.stringify({
+          endpoint:subJson.endpoint,
+          keys_p256dh:subJson.keys.p256dh,
+          keys_auth:subJson.keys.auth
+        })
+      }).then(function(){console.log("Push subscription saved");return true})
+        .catch(function(e){console.warn("Failed to save sub:",e);return true});
+    }
+    return true;
+  }).catch(function(e){console.warn("Push subscribe error:",e);return false});
+}
+
+// Override requestNotify to use push subscription
+var _origRequestNotify=requestNotify;
+requestNotify=function(){
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  var isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+
+  if(!("Notification" in window)){
+    if(isIOS&&!isStandalone){alert("To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again")}
+    else{alert("Notifications not supported. Try Safari.")}
+    return;
+  }
+
+  Notification.requestPermission().then(function(p){
+    if(p==="granted"){
+      document.getElementById("notifyBtn").classList.add("active");
+      document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON";
+      localStorage.setItem("cpja_notify","1");
+      // Subscribe to push
+      subscribeToPush().then(function(ok){
+        if(ok){
+          new Notification("CashPotJA Alerts ON!",{body:"You will get background alerts when new numbers drop!"});
+        }
+      });
+    }
+  });
+};
 
 </script>
 </body>

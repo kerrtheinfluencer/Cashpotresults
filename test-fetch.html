@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CashPot Fetch Test</title>
+<style>body{font-family:monospace;padding:1rem;background:#111;color:#0f0}pre{white-space:pre-wrap;word-break:break-all;font-size:12px}h3{color:#ff0}.ok{color:#0f0}.err{color:#f00}.warn{color:#ff0}</style>
+</head>
+<body>
+<h2>CashPot Live Fetch Debug</h2>
+<div id="log"></div>
+<script>
+const log = document.getElementById('log');
+function L(msg, cls='ok') { log.innerHTML += '<div class="'+cls+'">'+new Date().toLocaleTimeString()+' — '+msg+'</div>'; }
+
+const target = 'https://www.jamaicaindex.com/lottery/results/cash-pot';
+
+const proxies = [
+  { name: 'allorigins (get)', url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(target), json: true },
+  { name: 'allorigins (raw)', url: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target), json: false },
+  { name: 'cors.lol', url: 'https://api.cors.lol/?url=' + encodeURIComponent(target), json: false },
+  { name: 'corsproxy.io', url: 'https://corsproxy.io/?url=' + encodeURIComponent(target), json: false },
+];
+
+async function testProxy(p) {
+  L('Testing: ' + p.name + '...', 'warn');
+  try {
+    const resp = await fetch(p.url, { signal: AbortSignal.timeout(15000) });
+    L('Response status: ' + resp.status + ' ' + resp.statusText);
+    if (!resp.ok) { L('FAILED — status ' + resp.status, 'err'); return null; }
+    
+    let text;
+    if (p.json) {
+      const json = await resp.json();
+      text = json.contents || json.data || '';
+      L('Got JSON response, contents length: ' + text.length);
+    } else {
+      text = await resp.text();
+      L('Got text response, length: ' + text.length);
+    }
+    
+    if (text.length < 100) { L('Response too short: ' + text.substring(0, 200), 'err'); return null; }
+    
+    // Try to find Cash Pot numbers
+    const slotMap = {EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
+    const draws = [null,null,null,null,null,null];
+    
+    // Method 1: table row pattern
+    const rowRe = /(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})[^|]*\|[^|]*Cash\s*Pot[^|]*?(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)[^|]*\|\s*(\d{1,2})\s/gi;
+    let match, found = 0;
+    const dateResults = {};
+    while ((match = rowRe.exec(text)) !== null) {
+      const months = {january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+      const mo = months[match[2].toLowerCase()];
+      const ds = match[3]+'-'+String(mo).padStart(2,'0')+'-'+String(match[1]).padStart(2,'0');
+      const si = slotMap[match[4].toUpperCase()];
+      const num = parseInt(match[5]);
+      if (num>=1 && num<=36 && si!==undefined) {
+        if (!dateResults[ds]) dateResults[ds] = [null,null,null,null,null,null];
+        dateResults[ds][si] = num;
+        found++;
+      }
+    }
+    
+    if (found > 0) {
+      L('✅ SUCCESS! Found ' + found + ' results via table parsing', 'ok');
+      for (const [d, r] of Object.entries(dateResults)) {
+        L('  ' + d + ': [' + r.join(', ') + ']');
+      }
+      return dateResults;
+    }
+    
+    // Method 2: simpler — look for SLOT followed by number
+    L('Table regex found nothing. Trying simple pattern...', 'warn');
+    const simpleRe = /(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)\s+\d{1,2}:\d{2}[AP]M\s+#\d+\s+(\d{1,2})/gi;
+    while ((match = simpleRe.exec(text)) !== null) {
+      const si = slotMap[match[1].toUpperCase()];
+      const num = parseInt(match[2]);
+      if (num>=1&&num<=36&&si!==undefined) { draws[si] = num; found++; }
+    }
+    
+    if (found > 0) {
+      L('✅ Found ' + found + ' via simple pattern: [' + draws.join(', ') + ']', 'ok');
+      return draws;
+    }
+    
+    // Method 3: just dump first 2000 chars for inspection
+    L('No patterns matched. First 2000 chars of response:', 'err');
+    L('<pre>' + text.substring(0, 2000).replace(/</g,'&lt;') + '</pre>');
+    
+    return null;
+  } catch(e) {
+    L('ERROR: ' + e.message, 'err');
+    return null;
+  }
+}
+
+async function runAll() {
+  L('Starting proxy tests...', 'warn');
+  for (const p of proxies) {
+    const result = await testProxy(p);
+    if (result) { L('🎯 Working proxy found: ' + p.name, 'ok'); break; }
+    L('---', 'warn');
+  }
+  L('Done.', 'warn');
+}
+
+runAll();
+</script>
+</body>
+</html>

@@ -287,44 +287,6 @@ main {
   color: var(--text-dim);
   font-family: var(--font-mono);
 }
-.draw-share {
-  margin-left: auto;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-.draw-share:hover { border-color: var(--green); color: var(--green); }
-.draw-share:active { background: var(--green-pale); }
-
-/* ── VISITOR COUNTER ───────────────────── */
-.visitor-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.72rem;
-  color: var(--text-dim);
-}
-.visitor-dot {
-  width: 6px; height: 6px;
-  background: var(--green-light);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-.visitor-count {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  color: var(--green);
-}
 
 /* ── NUMBER GRID ────────────────────────── */
 .num-grid {
@@ -464,94 +426,6 @@ main {
 }
 .site-footer a { color: var(--gold); text-decoration: none; }
 
-/* ── INSTALL BANNER ────────────────────── */
-.install-banner {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, #0d3d1f, #1a6b3c);
-  color: white;
-  padding: 1rem 1.25rem;
-  z-index: 200;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
-  animation: slideUp 0.4s ease-out;
-}
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-.install-banner.show { display: block; }
-.install-inner {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.install-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #0d3d1f;
-  font-family: var(--font-display);
-  flex-shrink: 0;
-}
-.install-text { flex: 1; }
-.install-title {
-  font-weight: 700;
-  font-size: 0.92rem;
-  margin-bottom: 0.1rem;
-}
-.install-sub {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.4;
-}
-.install-btn {
-  background: var(--gold);
-  color: #0d3d1f;
-  border: none;
-  padding: 0.55rem 1.1rem;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.82rem;
-  cursor: pointer;
-  font-family: var(--font-body);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.install-btn:active { opacity: 0.8; }
-.install-close {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.5);
-  font-size: 1.3rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.install-close:hover { color: white; }
-.install-ios-steps {
-  display: none;
-  margin-top: 0.6rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid rgba(255,255,255,0.15);
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.8);
-  line-height: 1.8;
-}
-.install-ios-steps.show { display: block; }
-.install-ios-steps span { color: var(--gold); font-weight: 600; }
-
 /* ── UTILITY ────────────────────────────── */
 .badge {
   display: inline-block;
@@ -597,6 +471,9 @@ main {
   .draw-row { padding: 0.65rem 0.75rem; gap: 0.5rem; }
   .draw-number { width: 42px; height: 42px; font-size: 1.1rem; }
 }
+
+.draw-share{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.5rem;font-size:0.7rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;transition:all 0.15s}.draw-share:hover{border-color:var(--green);color:var(--green)}.draw-share:active{background:var(--green-pale)}
+.visitor-bar{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-card);border-bottom:1px solid var(--border);font-size:0.72rem;color:var(--text-dim)}.visitor-dot{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:pulse 2s infinite}.visitor-count{font-family:var(--font-mono);font-weight:600;color:var(--green)}
 </style>
 </head>
 <body>
@@ -623,11 +500,7 @@ main {
     <a href="#faq" data-section="faq">FAQ</a>
   </nav>
 </header>
-
-<div class="visitor-bar">
-  <span class="visitor-dot"></span>
-  <span><span class="visitor-count" id="visitorCount">--</span> visitors today</span>
-</div>
+<div class="visitor-bar"><span class="visitor-dot"></span><span><span class="visitor-count" id="visitorCount">--</span> visitors today</span></div>
 
 <main>
   <!-- ════ TODAY ════ -->
@@ -1113,18 +986,18 @@ const ALL_DATA=[
 </script>
 <script>
 function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
-function getJAToday(){const j=getJANow();return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
-function getYesterday(){const j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
-function fmtDateLong(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-JM",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
-function fmtDateShort(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-JM",{weekday:"short",day:"numeric",month:"short"})}
-function getDOW(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay()}
-function getDataForDate(date){return ALL_DATA.find(d=>d.date===date)}
+function getJAToday(){var j=getJANow();return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
+function getYesterday(){var j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
+function fmtDateLong(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function fmtDateShort(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"short",day:"numeric",month:"short"})}
+function getDOW(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).getDay()}
+function getDataForDate(date){for(var i=0;i<ALL_DATA.length;i++){if(ALL_DATA[i].date===date)return ALL_DATA[i]}return null}
 
 var liveResults={};
 function getMergedDraws(date){
   var hc=getDataForDate(date),lv=liveResults[date];
   if(!hc&&!lv)return[null,null,null,null,null,null];
-  var base=hc?[].concat(hc.draws):[null,null,null,null,null,null];
+  var base=hc?hc.draws.slice():[null,null,null,null,null,null];
   if(lv){for(var i=0;i<6;i++){if(lv[i]!=null)base[i]=lv[i]}}
   return base;
 }
@@ -1132,316 +1005,227 @@ function getMergedDraws(date){
 var SLOT_CUTOFFS=[8.75,10.75,13.25,15.25,17.25,20.67];
 
 function fetchLiveResults(){
-  var target='https://www.jamaicaindex.com/lottery/results/cash-pot';
-  return fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
-  .then(function(resp){
-    if(!resp.ok) throw new Error('bad status');
-    return resp.text();
-  })
+  var target="https://www.jamaicaindex.com/lottery/results/cash-pot";
+  return fetch("https://corsproxy.io/?url="+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
+  .then(function(resp){if(!resp.ok)throw new Error("bad");return resp.text()})
   .then(function(html){
-    if(html.length<1000) return false;
+    if(html.length<1000)return false;
     var slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
-    var slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
-    var ja=getJANow();
-    var nowHour=ja.getHours()+ja.getMinutes()/60;
-    var today=getJAToday();
-    var yest=getYesterday();
+    var slots=["EARLYBIRD","MORNING","MIDDAY","MIDAFTERNOON","DRIVETIME","EVENING"];
+    var ja=getJANow(),nowHour=ja.getHours()+ja.getMinutes()/60;
+    var today=getJAToday(),yest=getYesterday();
     var allDraws=[null,null,null,null,null,null];
     for(var s=0;s<slots.length;s++){
-      var re=new RegExp(slots[s]+'</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
+      var re=new RegExp(slots[s]+"</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<","i");
       var m=html.match(re);
-      if(m){var num=parseInt(m[1]);if(num>=1&&num<=36) allDraws[slotMap[slots[s]]]=num;}
+      if(m){var num=parseInt(m[1]);if(num>=1&&num<=36)allDraws[slotMap[slots[s]]]=num}
     }
     var todayDraws=[null,null,null,null,null,null];
     var yesterdayDraws=[null,null,null,null,null,null];
     for(var i=0;i<6;i++){
-      if(allDraws[i]===null) continue;
-      if(nowHour>=SLOT_CUTOFFS[i]) todayDraws[i]=allDraws[i];
+      if(allDraws[i]===null)continue;
+      if(nowHour>=SLOT_CUTOFFS[i])todayDraws[i]=allDraws[i];
       else yesterdayDraws[i]=allDraws[i];
     }
-    if(todayDraws.some(function(d){return d!==null})) liveResults[today]=todayDraws;
+    if(todayDraws.some(function(d){return d!==null}))liveResults[today]=todayDraws;
     if(yesterdayDraws.some(function(d){return d!==null})){
-      if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
-      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
+      if(!liveResults[yest])liveResults[yest]=[null,null,null,null,null,null];
+      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null)liveResults[yest][j]=yesterdayDraws[j]}
     }
-    console.log('Today:',todayDraws,'Yesterday:',yesterdayDraws);
     return true;
   })
-  .catch(function(e){console.warn('Fetch error:',e.message);return false});
+  .catch(function(e){console.warn("Fetch error:",e.message);return false});
 }
 
-var navLinks=document.querySelectorAll('.site-nav a');
-var sects=document.querySelectorAll('.section');
-function showSection(id){sects.forEach(function(s){s.classList.remove('active')});navLinks.forEach(function(a){a.classList.remove('active')});var sec=document.getElementById(id);if(sec)sec.classList.add('active');var link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add('active')}
-navLinks.forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,'','#'+a.dataset.section)})});
+var navLinks=document.querySelectorAll(".site-nav a");
+var sects=document.querySelectorAll(".section");
+function showSection(id){
+  sects.forEach(function(s){s.classList.remove("active")});
+  navLinks.forEach(function(a){a.classList.remove("active")});
+  var sec=document.getElementById(id);if(sec)sec.classList.add("active");
+  var link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add("active");
+}
+navLinks.forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,"","#"+a.dataset.section)})});
 if(window.location.hash){var hh=window.location.hash.slice(1);if(document.getElementById(hh))showSection(hh)}
 
 function renderToday(){
   var today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
-  document.getElementById('todayTitle').textContent='Cash Pot Results \u2014 Today';
-  document.getElementById('todayDate').textContent=fmtDateLong(today);
+  document.getElementById("todayTitle").textContent="Cash Pot Results \u2014 Today";
+  document.getElementById("todayDate").textContent=fmtDateLong(today);
   var nowHour=ja.getHours()+ja.getMinutes()/60;
-  var ns=SLOT_HOURS.findIndex(function(h){return h>nowHour});
-  if(ns===-1&&draws.every(function(d){return d!==null}))document.getElementById('nextDraw').innerHTML='\u2713 All draws complete';
-  else if(ns===-1)document.getElementById('nextDraw').innerHTML='\u23f3 Awaiting final results...';
+  var ns=-1;for(var x=0;x<SLOT_HOURS.length;x++){if(SLOT_HOURS[x]>nowHour){ns=x;break}}
+  if(ns===-1&&draws.every(function(d){return d!==null}))document.getElementById("nextDraw").innerHTML="\u2713 All draws complete";
+  else if(ns===-1)document.getElementById("nextDraw").innerHTML="\u23f3 Awaiting final results...";
   else updateCountdown(ns);
-  var h='';
-  for(var i=0;i<6;i++){var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
-    h+='<div class="draw-row '+(done?'':'pending')+'"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>'+(done?'<div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div><button class="draw-share" onclick="shareDraw('+i+','+n+')">\u2197 Share</button>':'<div class="draw-number pending-num">'+(pend?'\u23f3':'\u2014')+'</div><div class="draw-meaning" style="color:var(--text-dim)">'+(pend?'Upcoming':'Awaiting result')+'</div>')+'</div>'}
-  document.getElementById('todayDraws').innerHTML=h;
+  var h="";
+  for(var i=0;i<6;i++){
+    var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
+    h+='<div class="draw-row '+(done?"":"pending")+'">';
+    h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
+    if(done){
+      h+='<div class="draw-number">'+n+'</div>';
+      h+='<div class="draw-meaning">'+MEANINGS[n]+'</div>';
+      h+='<button class="draw-share" onclick="shareDraw('+i+","+n+')">Share</button>';
+    }else{
+      h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
+      h+='<div class="draw-meaning" style="color:var(--text-dim)">'+(pend?"Upcoming":"Awaiting result")+'</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById("todayDraws").innerHTML=h;
 }
 
-function shareDraw(slotIdx, num){
-  var text='Cash Pot '+SLOT_NAMES[slotIdx]+' result: '+num+' \u2014 '+MEANINGS[num]+' \ud83c\uddfm\ud83c\uddf0\n\nGet live results at '+window.location.href;
+function shareDraw(slotIdx,num){
+  var text="Cash Pot "+SLOT_NAMES[slotIdx]+" result: "+num+" \u2014 "+MEANINGS[num]+"\n\nGet live results \u27a1 "+window.location.href;
   if(navigator.share){
-    navigator.share({title:'Cash Pot Result',text:text}).catch(function(){});
-  } else {
-    navigator.clipboard.writeText(text).then(function(){alert('Result copied to clipboard!')}).catch(function(){
-      prompt('Copy this:',text);
-    });
+    navigator.share({title:"Cash Pot Result",text:text}).catch(function(){});
+  }else{
+    try{navigator.clipboard.writeText(text);alert("Copied!")}catch(e){prompt("Copy:",text)}
   }
 }
-function updateCountdown(si){var ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60),t=new Date(ja);t.setHours(tH,tM,0,0);var d=t-ja;if(d<=0){document.getElementById('nextDraw').innerHTML='\ud83c\udfaf '+SLOT_NAMES[si]+' draw happening now!';return}var hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);document.getElementById('nextDraw').innerHTML='\u23f1 Next: <strong>'+SLOT_NAMES[si]+'</strong> in '+(hh>0?hh+'h ':'')+mm+'m '+ss+'s'}
+
+function updateCountdown(si){
+  var ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60);
+  var t=new Date(ja);t.setHours(tH,tM,0,0);var d=t-ja;
+  if(d<=0){document.getElementById("nextDraw").innerHTML="\ud83c\udfaf "+SLOT_NAMES[si]+" draw happening now!";return}
+  var hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);
+  document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
+}
 
 function renderYesterday(){
   var y=getYesterday(),draws=getMergedDraws(y);
-  if(draws.every(function(d){return d===null})){document.getElementById('yesterdayDraws').innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
-  var h='';draws.forEach(function(n,i){if(n===null)return;h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>'});
-  document.getElementById('yesterdayDraws').innerHTML=h;
+  if(draws.every(function(d){return d===null})){document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
+  var h="";
+  for(var i=0;i<6;i++){
+    var n=draws[i];if(n===null)continue;
+    h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>';
+  }
+  document.getElementById("yesterdayDraws").innerHTML=h;
 }
 
 var historyPage=0;
 function renderHistory(){
-  var fromDate=document.getElementById('historyFrom').value,searchNum=parseInt(document.getElementById('historyNum').value),slotF=document.getElementById('historySlot').value;
-  var f=[].concat(ALL_DATA).reverse();
+  var fromDate=document.getElementById("historyFrom").value;
+  var searchNum=parseInt(document.getElementById("historyNum").value);
+  var slotF=document.getElementById("historySlot").value;
+  var f=ALL_DATA.slice().reverse();
   if(fromDate)f=f.filter(function(d){return d.date>=fromDate});
-  if(!isNaN(searchNum)&&searchNum>=1&&searchNum<=36){f=f.filter(function(d){if(slotF!=='')return d.draws[+slotF]===searchNum;return d.draws.some(function(n){return n===searchNum})})}
-  else if(slotF!=='')f=f.filter(function(d){return d.draws[+slotF]!==null});
+  if(!isNaN(searchNum)&&searchNum>=1&&searchNum<=36){
+    f=f.filter(function(d){if(slotF!=="")return d.draws[+slotF]===searchNum;return d.draws.indexOf(searchNum)>=0});
+  }else if(slotF!==""){f=f.filter(function(d){return d.draws[+slotF]!==null})}
   var showing=f.slice(0,(historyPage+1)*14);
-  var h='';for(var k=0;k<showing.length;k++){var day=showing[k];var dow=DOW_SHORT[getDOW(day.date)];h+='<div class="history-day"><div class="history-date"><span>'+dow+', '+fmtDateShort(day.date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+day.date+'</span></div><div class="history-draws">'+day.draws.map(function(n,i){return n!==null?'<div class="history-chip"><span class="history-chip-slot">'+SLOT_NAMES[i].substring(0,3)+'</span><span class="history-chip-num">'+n+'</span></div>':''}).join('')+'</div></div>'}
-  document.getElementById('historyList').innerHTML=h;
-  document.getElementById('loadMoreBtn').style.display=showing.length<f.length?'block':'none';
+  var h="";
+  for(var k=0;k<showing.length;k++){
+    var day=showing[k],dow=DOW_SHORT[getDOW(day.date)];
+    h+='<div class="history-day"><div class="history-date"><span>'+dow+", "+fmtDateShort(day.date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+day.date+'</span></div><div class="history-draws">';
+    for(var di=0;di<6;di++){if(day.draws[di]!==null)h+='<div class="history-chip"><span class="history-chip-slot">'+SLOT_NAMES[di].substring(0,3)+'</span><span class="history-chip-num">'+day.draws[di]+'</span></div>'}
+    h+='</div></div>';
+  }
+  document.getElementById("historyList").innerHTML=h;
+  document.getElementById("loadMoreBtn").style.display=showing.length<f.length?"block":"none";
 }
 function loadMoreHistory(){historyPage++;renderHistory()}
-['historyFrom','historyNum','historySlot'].forEach(function(id){var el=document.getElementById(id);el.addEventListener('change',function(){historyPage=0;renderHistory()});el.addEventListener('input',function(){historyPage=0;renderHistory()})});
+["historyFrom","historyNum","historySlot"].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener("change",function(){historyPage=0;renderHistory()});
+  el.addEventListener("input",function(){historyPage=0;renderHistory()});
+});
 
 function renderMeanings(){
-  var seq=[];ALL_DATA.forEach(function(d){d.draws.forEach(function(n){if(n!==null)seq.push(n)})});
+  var seq=[];for(var d=0;d<ALL_DATA.length;d++){for(var s=0;s<6;s++){var n=ALL_DATA[d].draws[s];if(n!==null)seq.push(n)}}
   var ls={};for(var i=1;i<=36;i++)ls[i]=-1;for(var j=0;j<seq.length;j++)ls[seq[j]]=j;
   var gap={};for(var k=1;k<=36;k++)gap[k]=ls[k]===-1?999:(seq.length-1-ls[k]);
-  var h='';for(var n=1;n<=36;n++){h+='<div class="num-cell" onclick="alert(\''+n+' \u2014 '+MEANINGS[n]+'\\nGap: '+gap[n]+' draws\')"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+MEANINGS[n]+'</div></div>'}
-  document.getElementById('meaningsGrid').innerHTML=h;
+  var h="";for(var m=1;m<=36;m++){
+    h+='<div class="num-cell" onclick="alert(\''+m+" \u2014 "+MEANINGS[m]+"\\nGap: "+gap[m]+' draws\')"><div class="num-cell-num">'+m+'</div><div class="num-cell-name">'+MEANINGS[m]+'</div></div>';
+  }
+  document.getElementById("meaningsGrid").innerHTML=h;
 }
 
 function renderStats(){
-  var seq=[];ALL_DATA.forEach(function(d){d.draws.forEach(function(n){if(n!==null)seq.push(n)})});var N=seq.length;
-  var freq={};for(var i=1;i<=36;i++)freq[i]=0;seq.forEach(function(n){freq[n]++});
-  var ls={};for(var j=1;j<=36;j++)ls[j]=-1;for(var k=0;k<N;k++)ls[seq[k]]=k;
+  var seq=[];for(var d=0;d<ALL_DATA.length;d++){for(var s=0;s<6;s++){var n=ALL_DATA[d].draws[s];if(n!==null)seq.push(n)}}
+  var N=seq.length;
+  var freq={};for(var i=1;i<=36;i++)freq[i]=0;for(var j=0;j<N;j++)freq[seq[j]]++;
+  var ls={};for(var k=1;k<=36;k++)ls[k]=-1;for(var l=0;l<N;l++)ls[seq[l]]=l;
   var gap={};for(var g=1;g<=36;g++)gap[g]=ls[g]===-1?999:(N-1-ls[g]);
-  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0;rec.forEach(function(n){rf[n]++});
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0;for(var ri=0;ri<rec.length;ri++)rf[rec[ri]]++;
   var sorted=[];for(var a=1;a<=36;a++)sorted.push(a);sorted.sort(function(a,b){return freq[b]-freq[a]});
   var overdue=[];for(var b=1;b<=36;b++)overdue.push(b);overdue.sort(function(a,b){return gap[b]-gap[a]});
   var hot=[];for(var c=1;c<=36;c++)hot.push(c);hot.sort(function(a,b){return rf[b]-rf[a]});
-  document.getElementById('totalDrawsStat').textContent=N.toLocaleString();
-  document.getElementById('statsGrid').innerHTML='<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div><div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+ALL_DATA.length+'</div></div><div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+' \u00b7 '+freq[sorted[0]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+' \u00b7 '+freq[sorted[35]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+' \u00b7 gap '+gap[overdue[0]]+'</div></div><div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+' \u00b7 '+rf[hot[0]]+'\u00d7 30d</div></div>';
-  var hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var hi=0;hi<10;hi++){var hn=hot[hi];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+hn+'</span><span class="history-chip-slot">'+rf[hn]+'\u00d7</span></div>'}document.getElementById('hotNumbers').innerHTML=hH+'</div>';
-  var cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var ci=0;ci<10;ci++){var cn=overdue[ci];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+cn+'</span><span class="history-chip-slot">g'+gap[cn]+'</span></div>'}document.getElementById('coldNumbers').innerHTML=cH+'</div>';
-  var mx=0;for(var fi=1;fi<=36;fi++){if(freq[fi]>mx)mx=freq[fi]}var fg='';for(var fn=1;fn<=36;fn++){var ht=freq[fn]/mx;var cl=ht>0.85?'hot':gap[fn]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+fn+'</div><div class="num-cell-name">'+freq[fn]+'\u00d7 \u00b7 g'+gap[fn]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
+  document.getElementById("totalDrawsStat").textContent=N.toLocaleString();
+  document.getElementById("statsGrid").innerHTML='<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div><div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+ALL_DATA.length+'</div></div><div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+" \u00b7 "+freq[sorted[0]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+" \u00b7 "+freq[sorted[35]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+" \u00b7 gap "+gap[overdue[0]]+'</div></div><div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+" \u00b7 "+rf[hot[0]]+'\u00d7 30d</div></div>';
+  var hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var hi=0;hi<10;hi++){var hn=hot[hi];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+hn+'</span><span class="history-chip-slot">'+rf[hn]+'\u00d7</span></div>'}document.getElementById("hotNumbers").innerHTML=hH+"</div>";
+  var cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var ci=0;ci<10;ci++){var cn=overdue[ci];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+cn+'</span><span class="history-chip-slot">g'+gap[cn]+'</span></div>'}document.getElementById("coldNumbers").innerHTML=cH+"</div>";
+  var mx=0;for(var fi=1;fi<=36;fi++){if(freq[fi]>mx)mx=freq[fi]}
+  var fg="";for(var fn=1;fn<=36;fn++){var ht=freq[fn]/mx;var cl=ht>0.85?"hot":gap[fn]>40?"cold":"";fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+fn+'</div><div class="num-cell-name">'+freq[fn]+"\u00d7 \u00b7 g"+gap[fn]+'</div></div>'}
+  document.getElementById("freqGrid").innerHTML=fg;
 }
 
-document.addEventListener('click',function(e){var q=e.target.closest('.faq-q');if(q)q.parentElement.classList.toggle('open')});
+document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});
 
 function requestNotify(){
   var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-  var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
-  if(!('Notification' in window)){
-    if(isIOS&&!isStandalone){alert('To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again')}
-    else{alert('Notifications not supported. Try Safari.')}
-    return}
-  if(Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1');return}
-  if(Notification.permission==='denied'){alert('Notifications blocked.');return}
-  Notification.requestPermission().then(function(p){if(p==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1')}});
+  var isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+  if(!("Notification" in window)){
+    if(isIOS&&!isStandalone){alert("To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again")}
+    else{alert("Notifications not supported. Try Safari.")}
+    return;
+  }
+  if(Notification.permission==="granted"){document.getElementById("notifyBtn").classList.add("active");document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON";localStorage.setItem("cpja_notify","1");return}
+  if(Notification.permission==="denied"){alert("Notifications blocked.");return}
+  Notification.requestPermission().then(function(p){if(p==="granted"){document.getElementById("notifyBtn").classList.add("active");document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON";localStorage.setItem("cpja_notify","1")}});
 }
-if(localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON'}
+if(localStorage.getItem("cpja_notify")==="1"&&"Notification" in window&&Notification.permission==="granted"){document.getElementById("notifyBtn").classList.add("active");document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON"}
+
+function fireNotification(slotIdx,num){
+  if("Notification" in window&&Notification.permission==="granted"){
+    try{new Notification("Cash Pot: "+num+" \u2014 "+MEANINGS[num],{body:SLOT_NAMES[slotIdx]+" draw just played!",tag:"cashpot-"+slotIdx,renotify:true})}catch(e){}
+  }
+  if("serviceWorker" in navigator&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification("Cash Pot: "+num+" \u2014 "+MEANINGS[num],{body:SLOT_NAMES[slotIdx]+" draw just played!",tag:"cashpot-"+slotIdx,renotify:true,vibrate:[200,100,200]});
+    }).catch(function(){});
+  }
+}
 
 var lastKnownCount=0;
 function poll(){
   var beforeDraws=getMergedDraws(getJAToday());
-  var beforeCount=beforeDraws.filter(function(d){return d!==null}).length;
+  var beforeCount=0;for(var b=0;b<6;b++){if(beforeDraws[b]!==null)beforeCount++}
   fetchLiveResults().then(function(){
     renderToday();renderYesterday();
     var afterDraws=getMergedDraws(getJAToday());
-    var afterCount=afterDraws.filter(function(d){return d!==null}).length;
-    // Fire notification if new result appeared
-    if(afterCount>beforeCount && afterCount>lastKnownCount){
-      lastKnownCount=afterCount;
-      // Find the newest result
+    var afterCount=0;for(var a=0;a<6;a++){if(afterDraws[a]!==null)afterCount++}
+    if(afterCount>beforeCount&&afterCount>lastKnownCount&&localStorage.getItem("cpja_notify")==="1"){
       for(var i=5;i>=0;i--){
-        if(afterDraws[i]!==null && (i>=beforeCount)){
-          fireNotification(i, afterDraws[i]);
-          break;
-        }
+        if(afterDraws[i]!==null&&beforeDraws[i]===null){fireNotification(i,afterDraws[i]);break}
       }
     }
-    if(afterCount>lastKnownCount) lastKnownCount=afterCount;
+    if(afterCount>lastKnownCount)lastKnownCount=afterCount;
   });
 }
 
-function fireNotification(slotIdx, num){
-  // Try browser notification
-  if('Notification' in window && Notification.permission==='granted'){
-    try{
-      new Notification('Cash Pot: '+num+' \u2014 '+MEANINGS[num],{
-        body:SLOT_NAMES[slotIdx]+' draw just played!',
-        icon:'./img/icon-192.png',
-        tag:'cashpot-'+slotIdx,
-        renotify:true
-      });
-    }catch(e){console.log('Notification error:',e)}
-  }
-  // Also try service worker notification (works better on mobile)
-  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
-    navigator.serviceWorker.ready.then(function(reg){
-      reg.showNotification('Cash Pot: '+num+' \u2014 '+MEANINGS[num],{
-        body:SLOT_NAMES[slotIdx]+' draw just played!',
-        icon:'./img/icon-192.png',
-        tag:'cashpot-'+slotIdx,
-        renotify:true,
-        vibrate:[200,100,200]
-      });
-    }).catch(function(){});
-  }
-}
 setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
 
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
 poll();
 setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}if(ns>=0)updateCountdown(ns)},1000);
 
-// Visitor counter — uses localStorage with daily reset
+// Visitor counter
 (function(){
   var today=getJAToday();
-  var key='cpja_visits_'+today;
-  var countKey='cpja_vcount_'+today;
-  var visited=localStorage.getItem(key);
-  var count=parseInt(localStorage.getItem(countKey))||0;
-  if(!visited){
-    count++;
-    localStorage.setItem(key,'1');
-    localStorage.setItem(countKey,String(count));
-    // Clean up old days
-    for(var i=0;i<localStorage.length;i++){
-      var k=localStorage.key(i);
-      if(k&&k.startsWith('cpja_visits_')&&k!==key) localStorage.removeItem(k);
-      if(k&&k.startsWith('cpja_vcount_')&&k!==countKey) localStorage.removeItem(k);
-    }
-  }
-  // Show a simulated realistic count (since localStorage is per-device)
-  // Base it on time of day — more visitors during draw times
   var ja=getJANow();
   var hour=ja.getHours();
-  var baseVisitors=42+Math.floor(Math.random()*18);
-  if(hour>=8&&hour<=9) baseVisitors+=25+Math.floor(Math.random()*15);
-  if(hour>=10&&hour<=11) baseVisitors+=35+Math.floor(Math.random()*20);
-  if(hour>=12&&hour<=14) baseVisitors+=50+Math.floor(Math.random()*25);
-  if(hour>=15&&hour<=17) baseVisitors+=40+Math.floor(Math.random()*20);
-  if(hour>=19&&hour<=21) baseVisitors+=55+Math.floor(Math.random()*30);
-  // Seed by date for consistency within same day
+  var base=42+Math.floor(Math.random()*18);
+  if(hour>=8&&hour<=9)base+=25;
+  if(hour>=10&&hour<=11)base+=35;
+  if(hour>=12&&hour<=14)base+=50;
+  if(hour>=15&&hour<=17)base+=40;
+  if(hour>=19&&hour<=21)base+=55;
   var seed=0;for(var c=0;c<today.length;c++)seed+=today.charCodeAt(c);
-  baseVisitors+=seed%30;
-  document.getElementById('visitorCount').textContent=baseVisitors.toLocaleString();
+  base+=seed%30;
+  document.getElementById("visitorCount").textContent=String(base);
 })();
 
 </script>
-<!-- Install Banner -->
-<div class="install-banner" id="installBanner">
-  <div class="install-inner">
-    <div class="install-icon">CP</div>
-    <div class="install-text">
-      <div class="install-title">Install CashPotJA</div>
-      <div class="install-sub">Get instant results on your home screen</div>
-      <div class="install-ios-steps" id="iosSteps">
-        <span>1.</span> Tap the <span>Share</span> button below (&#8593;)<br>
-        <span>2.</span> Scroll down and tap <span>Add to Home Screen</span><br>
-        <span>3.</span> Tap <span>Add</span> in the top right
-      </div>
-    </div>
-    <button class="install-btn" id="installBtn" onclick="handleInstall()">Install</button>
-    <button class="install-close" onclick="dismissInstall()">&times;</button>
-  </div>
-</div>
-
-<script>
-// Install banner logic
-var deferredPrompt = null;
-var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-var isAndroid = /Android/.test(navigator.userAgent);
-var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-var dismissed = localStorage.getItem('cpja_install_dismissed');
-
-// Android: capture beforeinstallprompt
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  showInstallBanner('android');
-});
-
-// Show banner after 3 seconds if not installed and not dismissed
-setTimeout(function() {
-  if (isStandalone || dismissed) return;
-  if (deferredPrompt) {
-    showInstallBanner('android');
-  } else if (isIOS) {
-    showInstallBanner('ios');
-  }
-}, 3000);
-
-function showInstallBanner(platform) {
-  var banner = document.getElementById('installBanner');
-  banner.classList.add('show');
-  if (platform === 'ios') {
-    document.getElementById('installBtn').textContent = 'How To';
-    document.getElementById('iosSteps').classList.remove('show');
-  } else {
-    document.getElementById('installBtn').textContent = 'Install';
-  }
-}
-
-function handleInstall() {
-  if (deferredPrompt) {
-    // Android native install
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(result) {
-      if (result.outcome === 'accepted') {
-        document.getElementById('installBanner').classList.remove('show');
-        localStorage.setItem('cpja_install_dismissed', '1');
-      }
-      deferredPrompt = null;
-    });
-  } else if (isIOS) {
-    // iOS: toggle step-by-step instructions
-    var steps = document.getElementById('iosSteps');
-    if (steps.classList.contains('show')) {
-      steps.classList.remove('show');
-      document.getElementById('installBtn').textContent = 'How To';
-    } else {
-      steps.classList.add('show');
-      document.getElementById('installBtn').textContent = 'Got It';
-    }
-  }
-}
-
-function dismissInstall() {
-  document.getElementById('installBanner').classList.remove('show');
-  localStorage.setItem('cpja_install_dismissed', '1');
-}
-
-// Also hide if already installed
-window.addEventListener('appinstalled', function() {
-  document.getElementById('installBanner').classList.remove('show');
-  localStorage.setItem('cpja_install_dismissed', '1');
-});
-</script>
-
 </body>
 </html>

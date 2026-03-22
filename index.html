@@ -610,7 +610,8 @@ main {
   © 2024–2026 CashPotJA. All rights reserved.
 </footer>
 
-<script>\nconst SLOT_NAMES=["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
+<script>
+const SLOT_NAMES=["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
 const SLOT_TIMES=["8:30 AM","10:30 AM","1:00 PM","3:00 PM","5:00 PM","8:25 PM"];
 const SLOT_HOURS=[8.5,10.5,13,15,17,20.42];
 const DOW_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -977,8 +978,9 @@ const ALL_DATA=[
   { date:"2026-03-19", draws:[18,32,15,30,34,9] },{ date:"2026-03-20", draws:[33,32,22,2,4,29] },
   { date:"2026-03-21", draws:[6,17,22,7,17,1] },
 
-];\n</script>
-<script>\n// CashPotJA v5 — time-filtered live results
+];
+</script>
+<script>
 function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
 function getJAToday(){const j=getJANow();return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
 function getYesterday(){const j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
@@ -987,163 +989,146 @@ function fmtDateShort(ds){const[y,m,d]=ds.split("-").map(Number);return new Date
 function getDOW(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay()}
 function getDataForDate(date){return ALL_DATA.find(d=>d.date===date)}
 
-let liveResults={};
+var liveResults={};
 function getMergedDraws(date){
-  const hc=getDataForDate(date);const lv=liveResults[date];
+  var hc=getDataForDate(date),lv=liveResults[date];
   if(!hc&&!lv)return[null,null,null,null,null,null];
-  const base=hc?[...hc.draws]:[null,null,null,null,null,null];
-  if(lv){for(let i=0;i<6;i++){if(lv[i]!=null)base[i]=lv[i]}}
+  var base=hc?[].concat(hc.draws):[null,null,null,null,null,null];
+  if(lv){for(var i=0;i<6;i++){if(lv[i]!=null)base[i]=lv[i]}}
   return base;
 }
 
-// Draw cutoff times in decimal hours (draw time + 15 min buffer for results to post)
-// EB 8:30 -> 8.75, MOR 10:30 -> 10.75, MID 1:00 -> 13.25, MA 3:00 -> 15.25, DT 5:00 -> 17.25, EVE 8:25 -> 20.67
-const SLOT_CUTOFFS=[8.75, 10.75, 13.25, 15.25, 17.25, 20.67];
+var SLOT_CUTOFFS=[8.75,10.75,13.25,15.25,17.25,20.67];
 
-async function fetchLiveResults(){
-  const target='https://www.jamaicaindex.com/lottery/results/cash-pot';
-  try{
-    const resp=await fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)});
-    if(!resp.ok)return false;
-    const html=await resp.text();
-    if(html.length<1000)return false;
-
-    const slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
-    const slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
-    const today=getJAToday();
-    const ja=getJANow();
-    const nowHour=ja.getHours()+ja.getMinutes()/60;
-
-    // Parse all slot results from the page
-    const allDraws=[null,null,null,null,null,null];
-    for(const slot of slots){
-      const re=new RegExp(slot+'</b>[\\s\\S]*?bbb1["\'\\s>]*>(\\d{1,2})<','i');
-      const m=html.match(re);
-      if(m){
-        const num=parseInt(m[1]);
-        if(num>=1&&num<=36) allDraws[slotMap[slot]]=num;
-      }
+function fetchLiveResults(){
+  var target='https://www.jamaicaindex.com/lottery/results/cash-pot';
+  return fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
+  .then(function(resp){
+    if(!resp.ok) throw new Error('bad status');
+    return resp.text();
+  })
+  .then(function(html){
+    if(html.length<1000) return false;
+    var slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
+    var slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
+    var ja=getJANow();
+    var nowHour=ja.getHours()+ja.getMinutes()/60;
+    var today=getJAToday();
+    var yest=getYesterday();
+    var allDraws=[null,null,null,null,null,null];
+    for(var s=0;s<slots.length;s++){
+      var re=new RegExp(slots[s]+'</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
+      var m=html.match(re);
+      if(m){var num=parseInt(m[1]);if(num>=1&&num<=36) allDraws[slotMap[slots[s]]]=num;}
     }
-
-    // CRITICAL: only accept results for slots that have already passed
-    // jamaicaindex shows the LATEST result per slot, which could be yesterday's
-    // if today's draw hasn't happened yet
-    const todayDraws=[null,null,null,null,null,null];
-    const yesterdayDraws=[null,null,null,null,null,null];
-    
-    for(let i=0;i<6;i++){
+    var todayDraws=[null,null,null,null,null,null];
+    var yesterdayDraws=[null,null,null,null,null,null];
+    for(var i=0;i<6;i++){
       if(allDraws[i]===null) continue;
-      if(nowHour>=SLOT_CUTOFFS[i]){
-        // This slot's draw has happened today — result is today's
-        todayDraws[i]=allDraws[i];
-      } else {
-        // This slot hasn't drawn yet today — result is yesterday's
-        yesterdayDraws[i]=allDraws[i];
-      }
+      if(nowHour>=SLOT_CUTOFFS[i]) todayDraws[i]=allDraws[i];
+      else yesterdayDraws[i]=allDraws[i];
     }
-
-    if(todayDraws.some(d=>d!==null)) liveResults[today]=todayDraws;
-    const yest=getYesterday();
-    if(yesterdayDraws.some(d=>d!==null)){
+    if(todayDraws.some(function(d){return d!==null})) liveResults[today]=todayDraws;
+    if(yesterdayDraws.some(function(d){return d!==null})){
       if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
-      for(let i=0;i<6;i++){if(yesterdayDraws[i]!==null) liveResults[yest][i]=yesterdayDraws[i]}
+      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
     }
-
     console.log('Today:',todayDraws,'Yesterday:',yesterdayDraws);
     return true;
-  }catch(e){console.warn('Fetch error:',e.message);return false}
+  })
+  .catch(function(e){console.warn('Fetch error:',e.message);return false});
 }
 
-// Navigation
-const navLinks=document.querySelectorAll('.site-nav a');
-const sections=document.querySelectorAll('.section');
-function showSection(id){sections.forEach(s=>s.classList.remove('active'));navLinks.forEach(a=>a.classList.remove('active'));const sec=document.getElementById(id);if(sec)sec.classList.add('active');const link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add('active')}
-navLinks.forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();showSection(a.dataset.section);history.pushState(null,'','#'+a.dataset.section)})});
-if(window.location.hash){const h=window.location.hash.slice(1);if(document.getElementById(h))showSection(h)}
+var navLinks=document.querySelectorAll('.site-nav a');
+var sects=document.querySelectorAll('.section');
+function showSection(id){sects.forEach(function(s){s.classList.remove('active')});navLinks.forEach(function(a){a.classList.remove('active')});var sec=document.getElementById(id);if(sec)sec.classList.add('active');var link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add('active')}
+navLinks.forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,'','#'+a.dataset.section)})});
+if(window.location.hash){var hh=window.location.hash.slice(1);if(document.getElementById(hh))showSection(hh)}
 
 function renderToday(){
-  const today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
+  var today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
   document.getElementById('todayTitle').textContent='Cash Pot Results \u2014 Today';
   document.getElementById('todayDate').textContent=fmtDateLong(today);
-  const nowHour=ja.getHours()+ja.getMinutes()/60;
-  let ns=SLOT_HOURS.findIndex(h=>h>nowHour);
-  if(ns===-1&&draws.every(d=>d!==null))document.getElementById('nextDraw').innerHTML='\u2713 All draws complete';
+  var nowHour=ja.getHours()+ja.getMinutes()/60;
+  var ns=SLOT_HOURS.findIndex(function(h){return h>nowHour});
+  if(ns===-1&&draws.every(function(d){return d!==null}))document.getElementById('nextDraw').innerHTML='\u2713 All draws complete';
   else if(ns===-1)document.getElementById('nextDraw').innerHTML='\u23f3 Awaiting final results...';
   else updateCountdown(ns);
-  let h='';
-  for(let i=0;i<6;i++){const n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
+  var h='';
+  for(var i=0;i<6;i++){var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
     h+='<div class="draw-row '+(done?'':'pending')+'"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>'+(done?'<div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div>':'<div class="draw-number pending-num">'+(pend?'\u23f3':'\u2014')+'</div><div class="draw-meaning" style="color:var(--text-dim)">'+(pend?'Upcoming':'Awaiting result')+'</div>')+'</div>'}
   document.getElementById('todayDraws').innerHTML=h;
 }
-function updateCountdown(si){const ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60),t=new Date(ja);t.setHours(tH,tM,0,0);const d=t-ja;if(d<=0){document.getElementById('nextDraw').innerHTML='\ud83c\udfaf '+SLOT_NAMES[si]+' draw happening now!';return}const hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);document.getElementById('nextDraw').innerHTML='\u23f1 Next: <strong>'+SLOT_NAMES[si]+'</strong> in '+(hh>0?hh+'h ':'')+mm+'m '+ss+'s'}
+function updateCountdown(si){var ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60),t=new Date(ja);t.setHours(tH,tM,0,0);var d=t-ja;if(d<=0){document.getElementById('nextDraw').innerHTML='\ud83c\udfaf '+SLOT_NAMES[si]+' draw happening now!';return}var hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);document.getElementById('nextDraw').innerHTML='\u23f1 Next: <strong>'+SLOT_NAMES[si]+'</strong> in '+(hh>0?hh+'h ':'')+mm+'m '+ss+'s'}
 
 function renderYesterday(){
-  const y=getYesterday(),draws=getMergedDraws(y);
-  if(draws.every(d=>d===null)){document.getElementById('yesterdayDraws').innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
-  let h='';draws.forEach((n,i)=>{if(n===null)return;h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>'});
+  var y=getYesterday(),draws=getMergedDraws(y);
+  if(draws.every(function(d){return d===null})){document.getElementById('yesterdayDraws').innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
+  var h='';draws.forEach(function(n,i){if(n===null)return;h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>'});
   document.getElementById('yesterdayDraws').innerHTML=h;
 }
 
-let historyPage=0;
+var historyPage=0;
 function renderHistory(){
-  const fromDate=document.getElementById('historyFrom').value,searchNum=parseInt(document.getElementById('historyNum').value),slotF=document.getElementById('historySlot').value;
-  let f=[...ALL_DATA].reverse();
-  if(fromDate)f=f.filter(d=>d.date>=fromDate);
-  if(!isNaN(searchNum)&&searchNum>=1&&searchNum<=36){f=f.filter(d=>{if(slotF!=='')return d.draws[+slotF]===searchNum;return d.draws.some(n=>n===searchNum)})}
-  else if(slotF!=='')f=f.filter(d=>d.draws[+slotF]!==null);
-  const showing=f.slice(0,(historyPage+1)*14);
-  let h='';for(const day of showing){const dow=DOW_SHORT[getDOW(day.date)];h+='<div class="history-day"><div class="history-date"><span>'+dow+', '+fmtDateShort(day.date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+day.date+'</span></div><div class="history-draws">'+day.draws.map((n,i)=>n!==null?'<div class="history-chip"><span class="history-chip-slot">'+SLOT_NAMES[i].substring(0,3)+'</span><span class="history-chip-num">'+n+'</span></div>':'').join('')+'</div></div>'}
+  var fromDate=document.getElementById('historyFrom').value,searchNum=parseInt(document.getElementById('historyNum').value),slotF=document.getElementById('historySlot').value;
+  var f=[].concat(ALL_DATA).reverse();
+  if(fromDate)f=f.filter(function(d){return d.date>=fromDate});
+  if(!isNaN(searchNum)&&searchNum>=1&&searchNum<=36){f=f.filter(function(d){if(slotF!=='')return d.draws[+slotF]===searchNum;return d.draws.some(function(n){return n===searchNum})})}
+  else if(slotF!=='')f=f.filter(function(d){return d.draws[+slotF]!==null});
+  var showing=f.slice(0,(historyPage+1)*14);
+  var h='';for(var k=0;k<showing.length;k++){var day=showing[k];var dow=DOW_SHORT[getDOW(day.date)];h+='<div class="history-day"><div class="history-date"><span>'+dow+', '+fmtDateShort(day.date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+day.date+'</span></div><div class="history-draws">'+day.draws.map(function(n,i){return n!==null?'<div class="history-chip"><span class="history-chip-slot">'+SLOT_NAMES[i].substring(0,3)+'</span><span class="history-chip-num">'+n+'</span></div>':''}).join('')+'</div></div>'}
   document.getElementById('historyList').innerHTML=h;
   document.getElementById('loadMoreBtn').style.display=showing.length<f.length?'block':'none';
 }
 function loadMoreHistory(){historyPage++;renderHistory()}
-['historyFrom','historyNum','historySlot'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('change',()=>{historyPage=0;renderHistory()});el.addEventListener('input',()=>{historyPage=0;renderHistory()})});
+['historyFrom','historyNum','historySlot'].forEach(function(id){var el=document.getElementById(id);el.addEventListener('change',function(){historyPage=0;renderHistory()});el.addEventListener('input',function(){historyPage=0;renderHistory()})});
 
 function renderMeanings(){
-  const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});
-  const ls={};for(let i=1;i<=36;i++)ls[i]=-1;for(let i=0;i<seq.length;i++)ls[seq[i]]=i;
-  const gap={};for(let i=1;i<=36;i++)gap[i]=ls[i]===-1?999:(seq.length-1-ls[i]);
-  let h='';for(let n=1;n<=36;n++){h+='<div class="num-cell" onclick="alert(\''+n+' \u2014 '+MEANINGS[n]+'\\nGap: '+gap[n]+' draws\')"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+MEANINGS[n]+'</div></div>'}
+  var seq=[];ALL_DATA.forEach(function(d){d.draws.forEach(function(n){if(n!==null)seq.push(n)})});
+  var ls={};for(var i=1;i<=36;i++)ls[i]=-1;for(var j=0;j<seq.length;j++)ls[seq[j]]=j;
+  var gap={};for(var k=1;k<=36;k++)gap[k]=ls[k]===-1?999:(seq.length-1-ls[k]);
+  var h='';for(var n=1;n<=36;n++){h+='<div class="num-cell" onclick="alert(\''+n+' \u2014 '+MEANINGS[n]+'\\nGap: '+gap[n]+' draws\')"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+MEANINGS[n]+'</div></div>'}
   document.getElementById('meaningsGrid').innerHTML=h;
 }
 
 function renderStats(){
-  const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});const N=seq.length;
-  const freq={};for(let i=1;i<=36;i++)freq[i]=0;for(const n of seq)freq[n]++;
-  const ls={};for(let i=1;i<=36;i++)ls[i]=-1;for(let i=0;i<N;i++)ls[seq[i]]=i;
-  const gap={};for(let i=1;i<=36;i++)gap[i]=ls[i]===-1?999:(N-1-ls[i]);
-  const rec=seq.slice(-180);const rf={};for(let i=1;i<=36;i++)rf[i]=0;for(const n of rec)rf[n]++;
-  const sorted=Array.from({length:36},(_,i)=>i+1).sort((a,b)=>freq[b]-freq[a]);
-  const overdue=Array.from({length:36},(_,i)=>i+1).sort((a,b)=>gap[b]-gap[a]);
-  const hot=Array.from({length:36},(_,i)=>i+1).sort((a,b)=>rf[b]-rf[a]);
+  var seq=[];ALL_DATA.forEach(function(d){d.draws.forEach(function(n){if(n!==null)seq.push(n)})});var N=seq.length;
+  var freq={};for(var i=1;i<=36;i++)freq[i]=0;seq.forEach(function(n){freq[n]++});
+  var ls={};for(var j=1;j<=36;j++)ls[j]=-1;for(var k=0;k<N;k++)ls[seq[k]]=k;
+  var gap={};for(var g=1;g<=36;g++)gap[g]=ls[g]===-1?999:(N-1-ls[g]);
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0;rec.forEach(function(n){rf[n]++});
+  var sorted=[];for(var a=1;a<=36;a++)sorted.push(a);sorted.sort(function(a,b){return freq[b]-freq[a]});
+  var overdue=[];for(var b=1;b<=36;b++)overdue.push(b);overdue.sort(function(a,b){return gap[b]-gap[a]});
+  var hot=[];for(var c=1;c<=36;c++)hot.push(c);hot.sort(function(a,b){return rf[b]-rf[a]});
   document.getElementById('totalDrawsStat').textContent=N.toLocaleString();
   document.getElementById('statsGrid').innerHTML='<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div><div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+ALL_DATA.length+'</div></div><div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+' \u00b7 '+freq[sorted[0]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+' \u00b7 '+freq[sorted[35]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+' \u00b7 gap '+gap[overdue[0]]+'</div></div><div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+' \u00b7 '+rf[hot[0]]+'\u00d7 30d</div></div>';
-  let hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(let i=0;i<10;i++){const n=hot[i];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+n+'</span><span class="history-chip-slot">'+rf[n]+'\u00d7</span></div>'}document.getElementById('hotNumbers').innerHTML=hH+'</div>';
-  let cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(let i=0;i<10;i++){const n=overdue[i];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+n+'</span><span class="history-chip-slot">g'+gap[n]+'</span></div>'}document.getElementById('coldNumbers').innerHTML=cH+'</div>';
-  const mx=Math.max(...Object.values(freq));let fg='';for(let n=1;n<=36;n++){const ht=freq[n]/mx;const cl=ht>0.85?'hot':gap[n]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+freq[n]+'\u00d7 \u00b7 g'+gap[n]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
+  var hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var hi=0;hi<10;hi++){var hn=hot[hi];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+hn+'</span><span class="history-chip-slot">'+rf[hn]+'\u00d7</span></div>'}document.getElementById('hotNumbers').innerHTML=hH+'</div>';
+  var cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(var ci=0;ci<10;ci++){var cn=overdue[ci];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+cn+'</span><span class="history-chip-slot">g'+gap[cn]+'</span></div>'}document.getElementById('coldNumbers').innerHTML=cH+'</div>';
+  var mx=0;for(var fi=1;fi<=36;fi++){if(freq[fi]>mx)mx=freq[fi]}var fg='';for(var fn=1;fn<=36;fn++){var ht=freq[fn]/mx;var cl=ht>0.85?'hot':gap[fn]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+fn+'</div><div class="num-cell-name">'+freq[fn]+'\u00d7 \u00b7 g'+gap[fn]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
 }
 
-document.addEventListener('click',e=>{const q=e.target.closest('.faq-q');if(q)q.parentElement.classList.toggle('open')});
+document.addEventListener('click',function(e){var q=e.target.closest('.faq-q');if(q)q.parentElement.classList.toggle('open')});
 
 function requestNotify(){
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  var isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
   if(!('Notification' in window)){
-    if(isIOS&&!isStandalone){alert('To get Cash Pot alerts on iPhone:\n\n1. Open in Safari\n2. Tap Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again')}
-    else{alert('Push notifications not supported. Try Safari.')}
+    if(isIOS&&!isStandalone){alert('To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again')}
+    else{alert('Notifications not supported. Try Safari.')}
     return}
   if(Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1');return}
-  if(Notification.permission==='denied'){alert('Notifications blocked. Enable in Settings.');return}
-  Notification.requestPermission().then(p=>{if(p==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1')}});
+  if(Notification.permission==='denied'){alert('Notifications blocked.');return}
+  Notification.requestPermission().then(function(p){if(p==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1')}});
 }
 if(localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON'}
 
-async function poll(){await fetchLiveResults();renderToday();renderYesterday()}
-setInterval(()=>{const h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
+function poll(){fetchLiveResults().then(function(){renderToday();renderYesterday()})}
+setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
 
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
 poll();
-setInterval(()=>{const ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=SLOT_HOURS.findIndex(sh=>sh>nh);if(ns>=0)updateCountdown(ns)},1000);
-\n</script>
+setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}if(ns>=0)updateCountdown(ns)},1000);
+
+</script>
 </body>
 </html>

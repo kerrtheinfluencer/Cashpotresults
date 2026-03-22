@@ -1304,23 +1304,29 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
 // Visitor counter
 (function(){
   var today=getJAToday();
-  var ja=getJANow();
-  var hour=ja.getHours();
-  var base=42+Math.floor(Math.random()*18);
-  if(hour>=8&&hour<=9)base+=25;
-  if(hour>=10&&hour<=11)base+=35;
-  if(hour>=12&&hour<=14)base+=50;
-  if(hour>=15&&hour<=17)base+=40;
-  if(hour>=19&&hour<=21)base+=55;
-  var seed=0;for(var c=0;c<today.length;c++)seed+=today.charCodeAt(c);
-  base+=seed%30;
-  document.getElementById("visitorCount").textContent=String(base);
+  var counted=localStorage.getItem("cpja_counted_"+today);
+  var SB_URL="https://xnokltjszzgaswccjpax.supabase.co";
+  var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
+  if(!counted){
+    fetch(SB_URL+"/rest/v1/rpc/increment_page_view",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY},
+      body:JSON.stringify({view_day:today})
+    }).then(function(){localStorage.setItem("cpja_counted_"+today,"1")}).catch(function(){});
+  }
+  fetch(SB_URL+"/rest/v1/page_views?view_date=eq."+today+"&select=count",{
+    headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY}
+  }).then(function(r){return r.json()}).then(function(data){
+    if(data&&data.length>0&&data[0].count){
+      document.getElementById("visitorCount").textContent=String(data[0].count);
+    }else{document.getElementById("visitorCount").textContent="1"}
+  }).catch(function(){document.getElementById("visitorCount").textContent="-"});
 })();
 
 // ── Web Push Subscription ─────────────────────────────────────
 var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
 var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
-var SUPABASE_ANON_KEY=""; // Will need to be filled in
+var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);

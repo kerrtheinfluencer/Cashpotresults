@@ -1,107 +1,84 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CashPot Fetch Test v2</title>
-<style>body{font-family:monospace;padding:1rem;background:#111;color:#0f0;font-size:13px}pre{white-space:pre-wrap;word-break:break-all;font-size:11px}.ok{color:#0f0}.err{color:#f00}.warn{color:#ff0}</style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CashPot Fetch Test v3</title>
+<style>body{font-family:monospace;padding:1rem;background:#111;color:#0f0;font-size:12px}pre{white-space:pre-wrap;word-break:break-all;font-size:11px;color:#aaa}.ok{color:#0f0}.err{color:#f00}.warn{color:#ff0}</style>
 </head>
 <body>
-<h2>CashPot Fetch Test v2</h2>
+<h2>CashPot Fetch Test v3</h2>
 <div id="log"></div>
 <script>
 const log=document.getElementById('log');
-function L(msg,cls='ok'){log.innerHTML+='<div class="'+cls+'">'+new Date().toLocaleTimeString()+' — '+msg+'</div>'}
+function L(msg,cls='ok'){log.innerHTML+='<div class="'+cls+'">'+msg+'</div>'}
 
 async function run(){
-  const target='https://www.jamaicaindex.com/lottery/results/cash-pot';
-  L('Fetching via corsproxy.io...','warn');
-  try{
-    const resp=await fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)});
-    L('Status: '+resp.status);
-    const html=await resp.text();
-    L('Got '+html.length+' bytes');
-
-    // Parse HTML - create a DOM parser
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(html,'text/html');
-
-    // Method 1: Find the results table - look for table rows with draw data
-    const rows=doc.querySelectorAll('table tr, .table tr, [class*=table] tr');
-    L('Found '+rows.length+' table rows');
-
-    // Method 2: Look for the text patterns in the HTML
-    // jamaicaindex uses patterns like: "22 March 2026, Sunday" and slot names with numbers
-    const slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
-    const dateResults={};
-
-    // The table has cells like: "22 March 2026, Sunday | Cash Pot EARLYBIRD | 8 Belly gold white | - | #37307"
-    // In HTML these are <td> elements
-    const allTds=doc.querySelectorAll('td');
-    L('Found '+allTds.length+' td elements');
-
-    // Walk through TDs looking for Cash Pot slot names
-    for(let i=0;i<allTds.length;i++){
-      const text=allTds[i].textContent.trim();
-      // Check if this TD contains a Cash Pot slot reference
-      const slotMatch=text.match(/Cash\s*Pot\s*(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)/i);
-      if(slotMatch){
-        const slotIdx=slotMap[slotMatch[1].toUpperCase()];
-        // Look backwards for the date
-        let dateStr=null;
-        for(let j=i-1;j>=Math.max(0,i-5);j--){
-          const dt=allTds[j].textContent.trim();
-          const dm=dt.match(/(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/i);
-          if(dm){
-            const months={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
-            dateStr=dm[3]+'-'+String(months[dm[2].toLowerCase()]).padStart(2,'0')+'-'+String(dm[1]).padStart(2,'0');
-            break;
-          }
+  // The results page loads data via JS, so the HTML shell is empty
+  // Let's try the main results page instead which has inline data
+  const targets=[
+    'https://www.jamaicaindex.com/lottery/jamaica-lotto-results-for-today',
+    'https://www.jamaicaindex.com/lottery/results/cash-pot',
+  ];
+  
+  for(const target of targets){
+    L('--- Testing: '+target.split('.com')[1],'warn');
+    try{
+      const resp=await fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)});
+      if(!resp.ok){L('Status '+resp.status,'err');continue}
+      const html=await resp.text();
+      L('Got '+html.length+' bytes');
+      
+      // Search raw HTML for number patterns
+      // Look for the actual number values near slot identifiers
+      
+      // Pattern 1: Look for "EARLYBIRD" near a number in the raw HTML
+      const slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
+      for(const slot of slots){
+        const idx=html.indexOf(slot);
+        if(idx>-1){
+          // Get 300 chars around it
+          const chunk=html.substring(Math.max(0,idx-50),idx+300);
+          // Find numbers 1-36 in this chunk
+          const nums=[...chunk.matchAll(/>(\d{1,2})</g)].map(m=>parseInt(m[1])).filter(n=>n>=1&&n<=36);
+          if(nums.length>0) L(slot+' found numbers in HTML: '+nums.join(', '),'ok');
+          else L(slot+' found at pos '+idx+' but no numbers nearby','warn');
         }
-        // Look forward for the number
-        for(let j=i+1;j<Math.min(allTds.length,i+4);j++){
-          const nt=allTds[j].textContent.trim();
-          const nm=nt.match(/^(\d{1,2})\s/);
-          if(nm){
-            const num=parseInt(nm[1]);
-            if(num>=1&&num<=36&&dateStr&&slotIdx!==undefined){
-              if(!dateResults[dateStr]) dateResults[dateStr]=[null,null,null,null,null,null];
-              dateResults[dateStr][slotIdx]=num;
-              L('Found: '+dateStr+' '+slotMatch[1]+' = '+num,'ok');
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    const count=Object.keys(dateResults).length;
-    if(count>0){
-      L('✅ SUCCESS! Found results for '+count+' dates','ok');
-      for(const[d,r] of Object.entries(dateResults).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,5)){
-        L('  '+d+': ['+r.join(', ')+']');
-      }
-    } else {
-      L('TD method found nothing. Trying text scan...','warn');
-      // Fallback: scan full text for number patterns near slot names
-      const fullText=doc.body?doc.body.textContent:'';
-      // Look for patterns like "EARLYBIRD   8:30AM #37307\n\n8\n\nBelly"
-      const re=/(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)\s+\d{1,2}:\d{2}[AP]M\s+#(\d+)\s+(\d{1,2})\s+([A-Z][a-z])/g;
-      let m;
-      while((m=re.exec(fullText))!==null){
-        L('Text scan found: '+m[1]+' #'+m[2]+' = '+m[3],'ok');
       }
       
-      // Also try: look for all number+meaning pairs
-      const numRe=/\b(\d{1,2})\s+(Duppy|Small Fire|Dead|Egg|Thief|Strong Man|Married Woman|Belly|Cow|Small House|Dog|Head|Police|Mouth|Rat|Young Girl|Chinese Man|Race Horse|Silver|Sick Person|Bad Girl|White Woman|Black Man|Fresh Water|John Crow|White Man|Big Fire|Fowl|Parson|Fish|Lizard|Gold|Big House|Baby|Goat|Old Lady)\b/g;
-      let nm;
-      let numFinds=0;
-      while((nm=numRe.exec(fullText))!==null){
-        if(numFinds<20) L('Number+Meaning: '+nm[1]+' '+nm[2],'ok');
-        numFinds++;
+      // Pattern 2: Search for known meanings in the raw HTML
+      const meanings=['Strong Man','Chinese Man','White Woman','Belly','Dead','Duppy','Married Woman'];
+      for(const m of meanings){
+        const idx=html.indexOf(m);
+        if(idx>-1){
+          const chunk=html.substring(Math.max(0,idx-100),idx+50);
+          const nums=[...chunk.matchAll(/>(\d{1,2})</g)].map(m=>parseInt(m[1])).filter(n=>n>=1&&n<=36);
+          if(nums.length>0) L('Found "'+m+'" with number: '+nums.join(', '),'ok');
+        }
       }
-      L('Total number+meaning pairs found: '+numFinds);
-    }
+      
+      // Pattern 3: Find ALL instances of >NUMBER< where number is 1-36
+      const allNums=[...html.matchAll(/>(\d{1,2})<\/(?:td|span|div|strong|b|h\d)/gi)]
+        .map(m=>({num:parseInt(m[1]),pos:m.index}))
+        .filter(x=>x.num>=1&&x.num<=36);
+      L('Found '+allNums.length+' numbers (1-36) in HTML tags');
+      if(allNums.length>0&&allNums.length<50){
+        L('Numbers: '+allNums.map(x=>x.num).join(', '));
+      }
+      
+      // Pattern 4: dump 500 chars around first "EARLYBIRD" for inspection
+      const ebIdx=html.indexOf('EARLYBIRD');
+      if(ebIdx>-1){
+        L('Raw HTML around EARLYBIRD:','warn');
+        const raw=html.substring(ebIdx,ebIdx+500).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        L('<pre>'+raw+'</pre>');
+      }
+      
+      // Pattern 5: look for JSON data embedded in script tags
+      const jsonMatch=html.match(/var\s+\w+\s*=\s*(\[[\s\S]*?\]);/);
+      if(jsonMatch) L('Found embedded JSON array!','ok');
+      
+      const dataMatch=html.match(/"draws?"?\s*:\s*\[/i);
+      if(dataMatch) L('Found "draws" key in embedded data!','ok');
 
-  }catch(e){
-    L('ERROR: '+e.message,'err');
+    }catch(e){L('Error: '+e.message,'err')}
   }
   L('Done.','warn');
 }

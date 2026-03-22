@@ -1002,12 +1002,94 @@ function getMergedDraws(date){
   return base;
 }
 
-var SLOT_CUTOFFS=[8.75,10.75,13.25,15.25,17.25,20.67];
-// Expected draw number ranges per day: each day has 6 draws
-// Draw numbers increment sequentially. We track what we've already seen.
-var seenDrawNumbers=JSON.parse(localStorage.getItem("cpja_seen_draws")||"{}");
-
+// Multi-source fetch with cross-validation
 function fetchLiveResults(){
+  // Try sources in order of reliability
+  return fetchFromCashpotInfo()
+    .then(function(ok){ if(ok) return true; return fetchFromJamaicaIndex(); })
+    .catch(function(){ return fetchFromJamaicaIndex().catch(function(){return false}); });
+}
+
+// Source 1: cashpotresults.info (BEST — empty slots for unplayed draws)
+function fetchFromCashpotInfo(){
+  var target="https://cashpotresults.info/";
+  return fetch("https://corsproxy.io/?url="+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
+  .then(function(resp){if(!resp.ok)throw new Error("bad");return resp.text()})
+  .then(function(html){
+    if(html.length<1000)return false;
+    // Format: "EARLY-BIRD #DRAW 37307" then next cell has the number
+    // Or: "#37307" in a cell, then "8" in next cell
+    var slotMap={"EARLY-BIRD":0,"MORNING":1,"MIDDAY":2,"MID AFTERNOON":3,"DRIVE TIME":4,"EVENING":5};
+    var today=getJAToday();
+    var draws=[null,null,null,null,null,null];
+    var foundDate=false;
+
+    // Check if the page has today's date
+    // Format: "Saturday, 22nd March 2026" or "Sunday, 22nd March 2026"
+    var months={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+    var dateRe=/(\d{1,2})(?:st|nd|rd|th)\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/gi;
+    var dm;
+    while((dm=dateRe.exec(html))!==null){
+      var mo=months[dm[2].toLowerCase()];
+      var pageDate=dm[3]+"-"+String(mo).padStart(2,"0")+"-"+String(dm[1]).padStart(2,"0");
+      if(pageDate===today){foundDate=true;break}
+    }
+
+    if(!foundDate){
+      console.log("cashpotresults.info: today not found on page");
+      return false;
+    }
+
+    // Parse each slot: "SLOT-NAME #DRAW NNNNN" followed by number
+    var slotNames=["EARLY-BIRD","MORNING","MIDDAY","MID AFTERNOON","DRIVE TIME","EVENING"];
+    for(var s=0;s<slotNames.length;s++){
+      // Pattern: SLOTNAME #DRAW NNNNN ... then a number 1-36 in a nearby cell
+      var re=new RegExp(slotNames[s]+"\\s+#DRAW\\s+(\\d+)[\\s\\S]*?(?:<td[^>]*>|\\|)\\s*(\\d{1,2})\\s*(?:</td>|\\|)","i");
+      var m=html.match(re);
+      if(m){
+        var drawNum=m[1];
+        var num=parseInt(m[2]);
+        if(num>=1&&num<=36){
+          draws[slotMap[slotNames[s]]]=num;
+          console.log("cashpotresults.info:",slotNames[s],"#"+drawNum,"=",num);
+        }
+      }
+    }
+
+    // Fallback: try DOMParser approach
+    if(draws.every(function(d){return d===null})){
+      var parser=new DOMParser();
+      var doc=parser.parseFromString(html,"text/html");
+      var tds=doc.querySelectorAll("td");
+      for(var i=0;i<tds.length;i++){
+        var text=tds[i].textContent.trim();
+        for(var sn=0;sn<slotNames.length;sn++){
+          if(text.indexOf(slotNames[sn])>=0&&text.indexOf("#DRAW")>=0){
+            // Look at next non-empty td for the number
+            for(var j=i+1;j<Math.min(tds.length,i+4);j++){
+              var numText=tds[j].textContent.trim();
+              var numVal=parseInt(numText);
+              if(numVal>=1&&numVal<=36){
+                draws[slotMap[slotNames[sn]]]=numVal;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if(draws.some(function(d){return d!==null})){
+      liveResults[today]=draws;
+      console.log("cashpotresults.info results:",draws);
+      return true;
+    }
+    return false;
+  });
+}
+
+// Source 2: jamaicaindex.com (fallback — uses draw numbers to avoid stale data)
+function fetchFromJamaicaIndex(){
   var target="https://www.jamaicaindex.com/lottery/results/cash-pot";
   return fetch("https://corsproxy.io/?url="+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
   .then(function(resp){if(!resp.ok)throw new Error("bad");return resp.text()})
@@ -1017,53 +1099,34 @@ function fetchLiveResults(){
     var slots=["EARLYBIRD","MORNING","MIDDAY","MIDAFTERNOON","DRIVETIME","EVENING"];
     var ja=getJANow(),nowHour=ja.getHours()+ja.getMinutes()/60;
     var today=getJAToday(),yest=getYesterday();
+    var cutoffs=[8.75,10.75,13.25,15.25,17.25,20.67];
 
-    // Extract draw number + result for each slot
-    // Pattern: SLOTNAME</b>...draw_no">#DRAWNUM</span>...bbb1...>NUMBER<
     var todayDraws=[null,null,null,null,null,null];
     var yesterdayDraws=[null,null,null,null,null,null];
 
     for(var s=0;s<slots.length;s++){
-      // Get draw number and result number together
-      var re=new RegExp(slots[s]+'</b>[\\s\\S]*?draw_no["\'>]*>#?(\\d+)<[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
+      var re=new RegExp(slots[s]+'</b>[\\s\\S]*?draw_no[^>]*>#?(\\d+)<[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
       var m=html.match(re);
       if(!m) continue;
-      var drawNum=m[1];
+      var drawNum=parseInt(m[1]);
       var num=parseInt(m[2]);
       if(num<1||num>36) continue;
-
       var slotIdx=slotMap[slots[s]];
-      var drawKey=today+"-"+slotIdx;
 
-      // Check if this draw number is new (not seen before)
-      if(seenDrawNumbers[drawKey]===drawNum){
-        // Same draw number as before — this is stale data, skip
-        // But still use it if we already accepted it
-        if(nowHour>=SLOT_CUTOFFS[slotIdx]) todayDraws[slotIdx]=num;
-        continue;
-      }
-
-      // New draw number! Check if time makes sense for today
-      if(nowHour>=SLOT_CUTOFFS[slotIdx]){
-        todayDraws[slotIdx]=num;
-        seenDrawNumbers[drawKey]=drawNum;
-      }else{
-        // This slot hasn't drawn yet today — result belongs to yesterday
-        yesterdayDraws[slotIdx]=num;
-      }
+      // Use time-based filtering
+      if(nowHour>=cutoffs[slotIdx]) todayDraws[slotIdx]=num;
+      else yesterdayDraws[slotIdx]=num;
     }
 
-    localStorage.setItem("cpja_seen_draws",JSON.stringify(seenDrawNumbers));
-
-    if(todayDraws.some(function(d){return d!==null}))liveResults[today]=todayDraws;
+    if(todayDraws.some(function(d){return d!==null})) liveResults[today]=todayDraws;
     if(yesterdayDraws.some(function(d){return d!==null})){
-      if(!liveResults[yest])liveResults[yest]=[null,null,null,null,null,null];
-      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null)liveResults[yest][j]=yesterdayDraws[j]}
+      if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
+      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
     }
-    return true;
-  })
-  .catch(function(e){console.warn("Fetch error:",e.message);return false});
+    return todayDraws.some(function(d){return d!==null});
+  });
 }
+
 
 var navLinks=document.querySelectorAll(".site-nav a");
 var sects=document.querySelectorAll(".section");
@@ -1257,7 +1320,7 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
 // ── Web Push Subscription ─────────────────────────────────────
 var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
 var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
-var SUPABASE_ANON_KEY="sb_publishable_BR1xjeDHtGQoAD_LaAWzGA_PV0rXIfD"; // Will need to be filled in
+var SUPABASE_ANON_KEY=""; // Will need to be filled in
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);

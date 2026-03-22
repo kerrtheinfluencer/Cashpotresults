@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Debug</title>
+<style>body{font:13px monospace;padding:1rem;background:#111;color:#0f0}div{margin:4px 0}.ok{color:#0f0}.err{color:#f00}.warn{color:#ff0}.info{color:#0af}pre{color:#aaa;font-size:11px;white-space:pre-wrap}</style>
+</head><body><h3>CashPotJA Debug Panel</h3><div id="log"></div>
+<script>
+var L=document.getElementById("log");
+function log(m,c){L.innerHTML+='<div class="'+(c||"ok")+'">'+m+'</div>'}
+
+var SB="https://xnokltjszzgaswccjpax.supabase.co";
+var SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
+var hdrs={"Content-Type":"application/json","apikey":SK,"Authorization":"Bearer "+SK};
+
+async function run(){
+  // === TEST 1: Supabase connection ===
+  log("=== TEST 1: Supabase Connection ===","info");
+  try{
+    var r=await fetch(SB+"/rest/v1/page_views?select=*",{headers:hdrs});
+    log("Status: "+r.status);
+    var d=await r.json();
+    log("page_views table: "+JSON.stringify(d));
+  }catch(e){log("Supabase ERROR: "+e.message,"err")}
+
+  // === TEST 2: Increment counter ===
+  log("=== TEST 2: Increment Counter ===","info");
+  try{
+    var today=new Date().toISOString().split("T")[0];
+    var r2=await fetch(SB+"/rest/v1/rpc/increment_page_view",{method:"POST",headers:hdrs,body:JSON.stringify({view_day:today})});
+    log("Increment status: "+r2.status+" "+r2.statusText);
+    var t2=await r2.text();
+    log("Response: "+t2);
+  }catch(e){log("Increment ERROR: "+e.message,"err")}
+
+  // === TEST 3: Read counter after increment ===
+  log("=== TEST 3: Read Counter ===","info");
+  try{
+    var today=new Date().toISOString().split("T")[0];
+    var r3=await fetch(SB+"/rest/v1/page_views?view_date=eq."+today+"&select=count",{headers:hdrs});
+    var d3=await r3.json();
+    log("Today's count: "+JSON.stringify(d3));
+  }catch(e){log("Read ERROR: "+e.message,"err")}
+
+  // === TEST 4: Scrape cashpotresults.info ===
+  log("=== TEST 4: Scrape cashpotresults.info ===","info");
+  try{
+    var r4=await fetch("https://corsproxy.io/?url="+encodeURIComponent("https://cashpotresults.info/"),{signal:AbortSignal.timeout(15000)});
+    log("Status: "+r4.status);
+    var html=await r4.text();
+    log("Got "+html.length+" bytes");
+
+    var slotNames=["EARLY-BIRD","MORNING","MIDDAY","MID AFTERNOON","DRIVE TIME","EVENING"];
+    for(var s=0;s<slotNames.length;s++){
+      var name=slotNames[s];
+      var idx=html.indexOf(name+" #DRAW");
+      if(idx===-1){log(name+": NOT FOUND in HTML","err");continue}
+
+      var after=html.substring(idx,idx+500);
+      log(name+" found at pos "+idx,"ok");
+
+      // Show raw context
+      var clean=after.substring(0,200).replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      log("<pre>"+clean+"</pre>");
+
+      // Try to find number
+      var numRe=/>\s*(\d{1,2})\s*</g;
+      var m,found=false;
+      while((m=numRe.exec(after))!==null){
+        var num=parseInt(m[1]);
+        if(num>=1&&num<=36){
+          log("  → NUMBER: "+num+" ✅","ok");
+          found=true;
+          break;
+        }
+      }
+      if(!found) log("  → NO NUMBER FOUND","err");
+    }
+  }catch(e){log("Scrape ERROR: "+e.message,"err")}
+
+  // === TEST 5: Push subscription tables ===
+  log("=== TEST 5: Push Subscriptions Table ===","info");
+  try{
+    var r5=await fetch(SB+"/rest/v1/push_subscriptions?select=id,active,created_at&limit=5",{headers:hdrs});
+    var d5=await r5.json();
+    log("Subscriptions: "+JSON.stringify(d5));
+  }catch(e){log("Subs ERROR: "+e.message,"err")}
+
+  log("=== DONE ===","info");
+}
+run();
+</script></body></html>

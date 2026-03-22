@@ -27,7 +27,7 @@
 <meta name="theme-color" content="#1a6b3c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1006,7 +1006,7 @@ function getMergedDraws(date){
 // Fetch live results via CORS proxy
 async function fetchLiveResults(){
   const url='https://www.jamaicaindex.com/lottery/jamaica-lotto-results-for-today';
-  const proxies=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?'];
+  const proxies=['https://api.allorigins.win/raw?url=','https://api.cors.lol/?url=','https://corsproxy.io/?url=','https://proxy.corsfix.com/?'];
   for(const proxy of proxies){
     try{
       const resp=await fetch(proxy+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});
@@ -1158,7 +1158,7 @@ async function pollResults(){
 setInterval(()=>{const h=getJANow().getHours();if(h>=8&&h<=21) pollResults()},120000);
 
 // Service Worker
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 // Init
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();

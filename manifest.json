@@ -2,12 +2,13 @@
   "name": "CashPotJA — Jamaica Cash Pot Results",
   "short_name": "CashPotJA",
   "description": "Latest Jamaica Cash Pot results updated 6 times daily",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f5f0e8",
   "theme_color": "#1a6b3c",
   "icons": [
-    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "./img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./img/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

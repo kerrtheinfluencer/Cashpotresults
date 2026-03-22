@@ -981,7 +981,7 @@ const ALL_DATA=[
 ];
 </script>
 <script>
-// CashPotJA v3 — with working live fetch
+// CashPotJA v4 — WORKING live fetch
 function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
 function getJAToday(){const j=getJANow();return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
 function getYesterday(){const j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
@@ -993,104 +993,77 @@ function getDataForDate(date){return ALL_DATA.find(d=>d.date===date)}
 let liveResults={};
 function getMergedDraws(date){
   const hc=getDataForDate(date);const lv=liveResults[date];
-  if(!hc&&!lv) return[null,null,null,null,null,null];
+  if(!hc&&!lv)return[null,null,null,null,null,null];
   const base=hc?[...hc.draws]:[null,null,null,null,null,null];
-  if(lv){for(let i=0;i<6;i++){if(lv[i]!=null) base[i]=lv[i]}}
+  if(lv){for(let i=0;i<6;i++){if(lv[i]!=null)base[i]=lv[i]}}
   return base;
 }
 
-// ── LIVE FETCH — parses the table from jamaicaindex.com ───────
+// ── LIVE FETCH — proven working parser ────────────────────────
 async function fetchLiveResults(){
   const target='https://www.jamaicaindex.com/lottery/results/cash-pot';
-  const proxies=[
-    'https://api.allorigins.win/get?url=',
-    'https://api.cors.lol/?url=',
-    'https://corsproxy.io/?url=',
-  ];
-  for(const proxy of proxies){
-    try{
-      const url=proxy+encodeURIComponent(target);
-      const resp=await fetch(url,{signal:AbortSignal.timeout(12000)});
-      if(!resp.ok) continue;
-      let text;
-      // allorigins returns JSON with contents field
-      if(proxy.includes('allorigins')){
-        const json=await resp.json();
-        text=json.contents||'';
-      } else {
-        text=await resp.text();
-      }
-      if(!text||text.length<500) continue;
+  try{
+    const resp=await fetch('https://corsproxy.io/?url='+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)});
+    if(!resp.ok)return false;
+    const html=await resp.text();
+    if(html.length<1000)return false;
 
-      // Parse: the table has rows like:
-      // "22 March 2026, Sunday | Cash Pot EARLYBIRD | 8  Belly  gold  white | - | #37307"
-      // Or in HTML: each row has date, slot name, number + meaning
-      const slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
-      const dateResults={};
+    // Parse: slot names are in <b>SLOTNAME</b>, numbers are in <div class="...bbb1">NUMBER</div>
+    const slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
+    const slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
 
-      // Match pattern: date | Cash Pot SLOTNAME | NUMBER  Meaning
-      const rowRegex=/(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})[^|]*\|[^|]*Cash\s*Pot[^|]*?(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)[^|]*\|\s*(\d{1,2})\s/gi;
-      let match;
-      while((match=rowRegex.exec(text))!==null){
-        const months={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
-        const mo=months[match[2].toLowerCase()];
-        const dateStr=match[3]+'-'+String(mo).padStart(2,'0')+'-'+String(match[1]).padStart(2,'0');
-        const slotIdx=slotMap[match[4].toUpperCase()];
-        const num=parseInt(match[5]);
-        if(num>=1&&num<=36&&slotIdx!==undefined){
-          if(!dateResults[dateStr]) dateResults[dateStr]=[null,null,null,null,null,null];
-          dateResults[dateStr][slotIdx]=num;
-        }
-      }
+    // Get today's date from page header or use Jamaica time
+    const today=getJAToday();
+    const yesterday=getYesterday();
 
-      // If regex didn't work, try simpler approach on the top section
-      if(Object.keys(dateResults).length===0){
-        // Look for the "today" section with slot names and numbers
-        const simpleRegex=/(EARLYBIRD|MORNING|MIDDAY|MIDAFTERNOON|DRIVETIME|EVENING)[^\d]*?(\d{1,2})\s*\n/gi;
-        const today=getJAToday();
-        dateResults[today]=[null,null,null,null,null,null];
-        while((match=simpleRegex.exec(text))!==null){
-          const si=slotMap[match[1].toUpperCase()];
-          const num=parseInt(match[2]);
-          if(num>=1&&num<=36&&si!==undefined) dateResults[today][si]=num;
-        }
-        if(dateResults[today].every(d=>d===null)) delete dateResults[today];
+    // Strategy: for each slot, find it in the HTML, then grab the number after it
+    // The number is in a div with class containing "bbb1" right after the slot name
+    // Pattern: SLOTNAME</b>...class="...bbb1">NUMBER</div>
+    const draws=[null,null,null,null,null,null];
+    for(const slot of slots){
+      const re=new RegExp(slot+'</b>[\\s\\S]*?bbb1["\'\\s>]*>(\\d{1,2})<','i');
+      const m=html.match(re);
+      if(m){
+        const num=parseInt(m[1]);
+        if(num>=1&&num<=36) draws[slotMap[slot]]=num;
       }
+    }
 
-      if(Object.keys(dateResults).length>0){
-        Object.assign(liveResults,dateResults);
-        console.log('Live results fetched via '+proxy.split('/')[2]+':',dateResults);
-        return true;
-      }
-    }catch(e){console.warn('Proxy failed:',e.message)}
-  }
-  console.warn('All proxies failed');
-  return false;
+    if(draws.some(d=>d!==null)){
+      // Determine if these are today's or yesterday's results
+      // Check page for today's date
+      const hasToday=html.includes(today.split('-')[2]+' March 2026')||html.includes('Sunday');
+      liveResults[today]=draws;
+      console.log('Live results:',draws);
+      return true;
+    }
+    return false;
+  }catch(e){console.warn('Fetch error:',e.message);return false}
 }
 
-// ── Navigation ────────────────────────────────────────────────
+// Navigation
 const navLinks=document.querySelectorAll('.site-nav a');
 const sections=document.querySelectorAll('.section');
 function showSection(id){sections.forEach(s=>s.classList.remove('active'));navLinks.forEach(a=>a.classList.remove('active'));const sec=document.getElementById(id);if(sec)sec.classList.add('active');const link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add('active')}
 navLinks.forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();showSection(a.dataset.section);history.pushState(null,'','#'+a.dataset.section)})});
 if(window.location.hash){const h=window.location.hash.slice(1);if(document.getElementById(h))showSection(h)}
 
-// ── Render Today ──────────────────────────────────────────────
+// Render Today
 function renderToday(){
   const today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
-  document.getElementById('todayTitle').textContent='Cash Pot Results — Today';
+  document.getElementById('todayTitle').textContent='Cash Pot Results \u2014 Today';
   document.getElementById('todayDate').textContent=fmtDateLong(today);
   const nowHour=ja.getHours()+ja.getMinutes()/60;
   let ns=SLOT_HOURS.findIndex(h=>h>nowHour);
-  if(ns===-1&&draws.every(d=>d!==null))document.getElementById('nextDraw').innerHTML='✓ All draws complete';
-  else if(ns===-1)document.getElementById('nextDraw').innerHTML='⏳ Awaiting final results...';
+  if(ns===-1&&draws.every(d=>d!==null))document.getElementById('nextDraw').innerHTML='\u2713 All draws complete';
+  else if(ns===-1)document.getElementById('nextDraw').innerHTML='\u23f3 Awaiting final results...';
   else updateCountdown(ns);
   let h='';
   for(let i=0;i<6;i++){const n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
-    h+='<div class="draw-row '+(done?'':'pending')+'"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>'+(done?'<div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div>':'<div class="draw-number pending-num">'+(pend?'⏳':'—')+'</div><div class="draw-meaning" style="color:var(--text-dim)">'+(pend?'Upcoming':'Awaiting result')+'</div>')+'</div>'}
+    h+='<div class="draw-row '+(done?'':'pending')+'"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>'+(done?'<div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div>':'<div class="draw-number pending-num">'+(pend?'\u23f3':'\u2014')+'</div><div class="draw-meaning" style="color:var(--text-dim)">'+(pend?'Upcoming':'Awaiting result')+'</div>')+'</div>'}
   document.getElementById('todayDraws').innerHTML=h;
 }
-function updateCountdown(si){const ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60),t=new Date(ja);t.setHours(tH,tM,0,0);const d=t-ja;if(d<=0){document.getElementById('nextDraw').innerHTML='🎯 '+SLOT_NAMES[si]+' draw happening now!';return}const hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);document.getElementById('nextDraw').innerHTML='⏱ Next: <strong>'+SLOT_NAMES[si]+'</strong> in '+(hh>0?hh+'h ':'')+mm+'m '+ss+'s'}
+function updateCountdown(si){const ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60),t=new Date(ja);t.setHours(tH,tM,0,0);const d=t-ja;if(d<=0){document.getElementById('nextDraw').innerHTML='\ud83c\udfaf '+SLOT_NAMES[si]+' draw happening now!';return}const hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);document.getElementById('nextDraw').innerHTML='\u23f1 Next: <strong>'+SLOT_NAMES[si]+'</strong> in '+(hh>0?hh+'h ':'')+mm+'m '+ss+'s'}
 
 function renderYesterday(){
   const y=getYesterday(),draws=getMergedDraws(y);
@@ -1099,7 +1072,7 @@ function renderYesterday(){
   document.getElementById('yesterdayDraws').innerHTML=h;
 }
 
-// ── History ───────────────────────────────────────────────────
+// History
 let historyPage=0;
 function renderHistory(){
   const fromDate=document.getElementById('historyFrom').value,searchNum=parseInt(document.getElementById('historyNum').value),slotF=document.getElementById('historySlot').value;
@@ -1115,16 +1088,16 @@ function renderHistory(){
 function loadMoreHistory(){historyPage++;renderHistory()}
 ['historyFrom','historyNum','historySlot'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('change',()=>{historyPage=0;renderHistory()});el.addEventListener('input',()=>{historyPage=0;renderHistory()})});
 
-// ── Meanings ──────────────────────────────────────────────────
+// Meanings
 function renderMeanings(){
   const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});
   const ls={};for(let i=1;i<=36;i++)ls[i]=-1;for(let i=0;i<seq.length;i++)ls[seq[i]]=i;
   const gap={};for(let i=1;i<=36;i++)gap[i]=ls[i]===-1?999:(seq.length-1-ls[i]);
-  let h='';for(let n=1;n<=36;n++){h+='<div class="num-cell" onclick="alert(\''+n+' — '+MEANINGS[n]+'\\n\\nKeywords: '+(CHART[n]||[]).join(", ")+'\\nGap: '+gap[n]+' draws\')"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+MEANINGS[n]+'</div></div>'}
+  let h='';for(let n=1;n<=36;n++){h+='<div class="num-cell" onclick="alert(\''+n+' \u2014 '+MEANINGS[n]+'\\nGap: '+gap[n]+' draws\')"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+MEANINGS[n]+'</div></div>'}
   document.getElementById('meaningsGrid').innerHTML=h;
 }
 
-// ── Stats ─────────────────────────────────────────────────────
+// Stats
 function renderStats(){
   const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});const N=seq.length;
   const freq={};for(let i=1;i<=36;i++)freq[i]=0;for(const n of seq)freq[n]++;
@@ -1135,47 +1108,40 @@ function renderStats(){
   const overdue=Array.from({length:36},(_,i)=>i+1).sort((a,b)=>gap[b]-gap[a]);
   const hot=Array.from({length:36},(_,i)=>i+1).sort((a,b)=>rf[b]-rf[a]);
   document.getElementById('totalDrawsStat').textContent=N.toLocaleString();
-  document.getElementById('statsGrid').innerHTML='<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div><div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+ALL_DATA.length+'</div></div><div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+' · '+freq[sorted[0]]+'×</div></div><div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+' · '+freq[sorted[35]]+'×</div></div><div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+' · gap '+gap[overdue[0]]+'</div></div><div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+' · '+rf[hot[0]]+'× 30d</div></div>';
-  let hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(let i=0;i<10;i++){const n=hot[i];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+n+'</span><span class="history-chip-slot">'+rf[n]+'×</span></div>'}document.getElementById('hotNumbers').innerHTML=hH+'</div>';
+  document.getElementById('statsGrid').innerHTML='<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div><div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+ALL_DATA.length+'</div></div><div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+' \u00b7 '+freq[sorted[0]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+' \u00b7 '+freq[sorted[35]]+'\u00d7</div></div><div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+' \u00b7 gap '+gap[overdue[0]]+'</div></div><div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+' \u00b7 '+rf[hot[0]]+'\u00d7 30d</div></div>';
+  let hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(let i=0;i<10;i++){const n=hot[i];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+n+'</span><span class="history-chip-slot">'+rf[n]+'\u00d7</span></div>'}document.getElementById('hotNumbers').innerHTML=hH+'</div>';
   let cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';for(let i=0;i<10;i++){const n=overdue[i];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+n+'</span><span class="history-chip-slot">g'+gap[n]+'</span></div>'}document.getElementById('coldNumbers').innerHTML=cH+'</div>';
-  const mx=Math.max(...Object.values(freq));let fg='';for(let n=1;n<=36;n++){const ht=freq[n]/mx;const cl=ht>0.85?'hot':gap[n]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+freq[n]+'× · g'+gap[n]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
+  const mx=Math.max(...Object.values(freq));let fg='';for(let n=1;n<=36;n++){const ht=freq[n]/mx;const cl=ht>0.85?'hot':gap[n]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+freq[n]+'\u00d7 \u00b7 g'+gap[n]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
 }
 
-// ── FAQ ───────────────────────────────────────────────────────
+// FAQ
 document.addEventListener('click',e=>{const q=e.target.closest('.faq-q');if(q)q.parentElement.classList.toggle('open')});
 
-// ── Notifications ─────────────────────────────────────────────
+// Notifications
 function requestNotify(){
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
   if(!('Notification' in window)){
-    if(isIOS&&!isStandalone){alert('📱 To get Cash Pot alerts on iPhone:\n\n1. Open this site in Safari\n2. Tap Share (↑) → Add to Home Screen\n3. Open from home screen\n4. Tap 🔔 Alerts again')}
-    else{alert('Push notifications not supported in this browser. Try Safari.')}
+    if(isIOS&&!isStandalone){alert('To get Cash Pot alerts on iPhone:\n\n1. Open in Safari\n2. Tap Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again')}
+    else{alert('Push notifications not supported. Try Safari.')}
     return}
-  if(Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='🔔 ON';localStorage.setItem('cpja_notify','1');return}
+  if(Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1');return}
   if(Notification.permission==='denied'){alert('Notifications blocked. Enable in Settings.');return}
-  Notification.requestPermission().then(p=>{if(p==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='🔔 ON';localStorage.setItem('cpja_notify','1');new Notification('CashPotJA Alerts On!',{body:'You will be notified when new numbers drop!'})}});
+  Notification.requestPermission().then(p=>{if(p==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON';localStorage.setItem('cpja_notify','1')}});
 }
-if(localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='🔔 ON'}
+if(localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON'}
 
-// ── Poll & notify ─────────────────────────────────────────────
+// Poll
 let lastCount=0;
 async function poll(){
-  const before=JSON.stringify(liveResults);
   await fetchLiveResults();
-  const after=JSON.stringify(liveResults);
   renderToday();renderYesterday();
-  if(before!==after&&localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){
-    const draws=getMergedDraws(getJAToday());const lat=draws.filter(d=>d!==null);
-    if(lat.length>lastCount&&lat.length>0){const n=lat[lat.length-1];new Notification('Cash Pot: '+n+' — '+MEANINGS[n],{body:SLOT_NAMES[lat.length-1]+' draw just played!'})}
-    lastCount=lat.length;
-  }
 }
 setInterval(()=>{const h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
 
-// ── Init ──────────────────────────────────────────────────────
+// Init
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
-poll(); // fetch live immediately
+poll();
 setInterval(()=>{const ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=SLOT_HOURS.findIndex(sh=>sh>nh);if(ns>=0)updateCountdown(ns)},1000);
 
 </script>

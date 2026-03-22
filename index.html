@@ -610,8 +610,7 @@ main {
   © 2024–2026 CashPotJA. All rights reserved.
 </footer>
 
-<script>
-const SLOT_NAMES=["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
+<script>\nconst SLOT_NAMES=["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
 const SLOT_TIMES=["8:30 AM","10:30 AM","1:00 PM","3:00 PM","5:00 PM","8:25 PM"];
 const SLOT_HOURS=[8.5,10.5,13,15,17,20.42];
 const DOW_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -978,10 +977,8 @@ const ALL_DATA=[
   { date:"2026-03-19", draws:[18,32,15,30,34,9] },{ date:"2026-03-20", draws:[33,32,22,2,4,29] },
   { date:"2026-03-21", draws:[6,17,22,7,17,1] },
 
-];
-</script>
-<script>
-// CashPotJA v4 — WORKING live fetch
+];\n</script>
+<script>\n// CashPotJA v5 — time-filtered live results
 function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
 function getJAToday(){const j=getJANow();return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
 function getYesterday(){const j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+String(j.getMonth()+1).padStart(2,"0")+"-"+String(j.getDate()).padStart(2,"0")}
@@ -999,7 +996,10 @@ function getMergedDraws(date){
   return base;
 }
 
-// ── LIVE FETCH — proven working parser ────────────────────────
+// Draw cutoff times in decimal hours (draw time + 15 min buffer for results to post)
+// EB 8:30 -> 8.75, MOR 10:30 -> 10.75, MID 1:00 -> 13.25, MA 3:00 -> 15.25, DT 5:00 -> 17.25, EVE 8:25 -> 20.67
+const SLOT_CUTOFFS=[8.75, 10.75, 13.25, 15.25, 17.25, 20.67];
+
 async function fetchLiveResults(){
   const target='https://www.jamaicaindex.com/lottery/results/cash-pot';
   try{
@@ -1008,36 +1008,49 @@ async function fetchLiveResults(){
     const html=await resp.text();
     if(html.length<1000)return false;
 
-    // Parse: slot names are in <b>SLOTNAME</b>, numbers are in <div class="...bbb1">NUMBER</div>
     const slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
     const slots=['EARLYBIRD','MORNING','MIDDAY','MIDAFTERNOON','DRIVETIME','EVENING'];
-
-    // Get today's date from page header or use Jamaica time
     const today=getJAToday();
-    const yesterday=getYesterday();
+    const ja=getJANow();
+    const nowHour=ja.getHours()+ja.getMinutes()/60;
 
-    // Strategy: for each slot, find it in the HTML, then grab the number after it
-    // The number is in a div with class containing "bbb1" right after the slot name
-    // Pattern: SLOTNAME</b>...class="...bbb1">NUMBER</div>
-    const draws=[null,null,null,null,null,null];
+    // Parse all slot results from the page
+    const allDraws=[null,null,null,null,null,null];
     for(const slot of slots){
       const re=new RegExp(slot+'</b>[\\s\\S]*?bbb1["\'\\s>]*>(\\d{1,2})<','i');
       const m=html.match(re);
       if(m){
         const num=parseInt(m[1]);
-        if(num>=1&&num<=36) draws[slotMap[slot]]=num;
+        if(num>=1&&num<=36) allDraws[slotMap[slot]]=num;
       }
     }
 
-    if(draws.some(d=>d!==null)){
-      // Determine if these are today's or yesterday's results
-      // Check page for today's date
-      const hasToday=html.includes(today.split('-')[2]+' March 2026')||html.includes('Sunday');
-      liveResults[today]=draws;
-      console.log('Live results:',draws);
-      return true;
+    // CRITICAL: only accept results for slots that have already passed
+    // jamaicaindex shows the LATEST result per slot, which could be yesterday's
+    // if today's draw hasn't happened yet
+    const todayDraws=[null,null,null,null,null,null];
+    const yesterdayDraws=[null,null,null,null,null,null];
+    
+    for(let i=0;i<6;i++){
+      if(allDraws[i]===null) continue;
+      if(nowHour>=SLOT_CUTOFFS[i]){
+        // This slot's draw has happened today — result is today's
+        todayDraws[i]=allDraws[i];
+      } else {
+        // This slot hasn't drawn yet today — result is yesterday's
+        yesterdayDraws[i]=allDraws[i];
+      }
     }
-    return false;
+
+    if(todayDraws.some(d=>d!==null)) liveResults[today]=todayDraws;
+    const yest=getYesterday();
+    if(yesterdayDraws.some(d=>d!==null)){
+      if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
+      for(let i=0;i<6;i++){if(yesterdayDraws[i]!==null) liveResults[yest][i]=yesterdayDraws[i]}
+    }
+
+    console.log('Today:',todayDraws,'Yesterday:',yesterdayDraws);
+    return true;
   }catch(e){console.warn('Fetch error:',e.message);return false}
 }
 
@@ -1048,7 +1061,6 @@ function showSection(id){sections.forEach(s=>s.classList.remove('active'));navLi
 navLinks.forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();showSection(a.dataset.section);history.pushState(null,'','#'+a.dataset.section)})});
 if(window.location.hash){const h=window.location.hash.slice(1);if(document.getElementById(h))showSection(h)}
 
-// Render Today
 function renderToday(){
   const today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
   document.getElementById('todayTitle').textContent='Cash Pot Results \u2014 Today';
@@ -1072,7 +1084,6 @@ function renderYesterday(){
   document.getElementById('yesterdayDraws').innerHTML=h;
 }
 
-// History
 let historyPage=0;
 function renderHistory(){
   const fromDate=document.getElementById('historyFrom').value,searchNum=parseInt(document.getElementById('historyNum').value),slotF=document.getElementById('historySlot').value;
@@ -1088,7 +1099,6 @@ function renderHistory(){
 function loadMoreHistory(){historyPage++;renderHistory()}
 ['historyFrom','historyNum','historySlot'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('change',()=>{historyPage=0;renderHistory()});el.addEventListener('input',()=>{historyPage=0;renderHistory()})});
 
-// Meanings
 function renderMeanings(){
   const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});
   const ls={};for(let i=1;i<=36;i++)ls[i]=-1;for(let i=0;i<seq.length;i++)ls[seq[i]]=i;
@@ -1097,7 +1107,6 @@ function renderMeanings(){
   document.getElementById('meaningsGrid').innerHTML=h;
 }
 
-// Stats
 function renderStats(){
   const seq=[];for(const d of ALL_DATA)d.draws.forEach(n=>{if(n!==null)seq.push(n)});const N=seq.length;
   const freq={};for(let i=1;i<=36;i++)freq[i]=0;for(const n of seq)freq[n]++;
@@ -1114,10 +1123,8 @@ function renderStats(){
   const mx=Math.max(...Object.values(freq));let fg='';for(let n=1;n<=36;n++){const ht=freq[n]/mx;const cl=ht>0.85?'hot':gap[n]>40?'cold':'';fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+n+'</div><div class="num-cell-name">'+freq[n]+'\u00d7 \u00b7 g'+gap[n]+'</div></div>'}document.getElementById('freqGrid').innerHTML=fg;
 }
 
-// FAQ
 document.addEventListener('click',e=>{const q=e.target.closest('.faq-q');if(q)q.parentElement.classList.toggle('open')});
 
-// Notifications
 function requestNotify(){
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
@@ -1131,19 +1138,12 @@ function requestNotify(){
 }
 if(localStorage.getItem('cpja_notify')==='1'&&'Notification' in window&&Notification.permission==='granted'){document.getElementById('notifyBtn').classList.add('active');document.getElementById('notifyBtn').textContent='\ud83d\udd14 ON'}
 
-// Poll
-let lastCount=0;
-async function poll(){
-  await fetchLiveResults();
-  renderToday();renderYesterday();
-}
+async function poll(){await fetchLiveResults();renderToday();renderYesterday()}
 setInterval(()=>{const h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
 
-// Init
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
 poll();
 setInterval(()=>{const ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=SLOT_HOURS.findIndex(sh=>sh>nh);if(ns>=0)updateCountdown(ns)},1000);
-
-</script>
+\n</script>
 </body>
 </html>

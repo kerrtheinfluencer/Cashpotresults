@@ -362,6 +362,15 @@ async function fetchLiveResults(){
         const num = parseInt(numMatch[1]);
         if (num < 1 || num > 36) continue;
 
+        // Time guard: never save a result for a draw that hasn't happened yet.
+        // Give a 5-minute window after draw time before accepting a number.
+        const drawHour = SLOT_HOURS[s];
+        const nowHour  = getJANow().getHours() + getJANow().getMinutes() / 60;
+        if (nowHour < drawHour - 0.08) { // 0.08h ≈ 5 minutes before draw
+          console.log(`→ ${SLOT_NAMES[s]}: skipped — draw time not reached yet`);
+          continue;
+        }
+
         slotFilled[s] = true;
         if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
 

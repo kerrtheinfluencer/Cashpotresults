@@ -301,64 +301,77 @@ function getDraws(date){
   return dbCache[date]||[null,null,null,null,null,null];
 }
 
-// ── SCRAPER ───────────────────────────────────────────────────
-function fetchLiveResults(){
-  return fetchFromCashpotInfo()
-    .catch(function(){return false})
-    .then(function(ok){if(ok)return true;return fetchFromJamaicaIndex().catch(function(){return false})});
-}
+// ── NEW & IMPROVED SCRAPER (replaces the old broken one) ───────────────────────────────────────────────────
+async function fetchLiveResults(){
+  const today = getJAToday();
+  console.log(`[CashPotJA] Fetching live results for ${today} @ ${new Date().toLocaleTimeString()}`);
 
-function fetchFromCashpotInfo(){
-  return fetch("https://corsproxy.io/?url="+encodeURIComponent("https://cashpotresults.info/"),{signal:AbortSignal.timeout(15000)})
-  .then(function(r){if(!r.ok)throw new Error("bad");return r.text()})
-  .then(function(html){
-    if(html.length<1000)return false;
-    var today=getJAToday();
-    var slotNames=["EARLY-BIRD","MORNING","MIDDAY","MID AFTERNOON","DRIVE TIME","EVENING"];
-    var saves=[];
-    for(var s=0;s<slotNames.length;s++){
-      var idx=html.indexOf(slotNames[s]+" #DRAW");
-      if(idx===-1)continue;
-      var after=html.substring(idx,idx+600);
-      var m,numRe=/>\s*(\d{1,2})\s*</g;
-      while((m=numRe.exec(after))!==null){
-        var num=parseInt(m[1]);
-        if(num>=1&&num<=36){
-          var isMega=after.toLowerCase().indexOf("gold")!==-1;
-          saves.push(saveToDB(today,s,num,isMega));
-          break;
+  const sources = [
+    "https://cashpotresults.info/",
+    "https://supremeventures.com/latest-results"
+  ];
+
+  let updated = false;
+
+  for (let url of sources) {
+    try {
+      // Use CORS proxy only if needed (uncomment the line below if direct fetch is blocked)
+      // const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!response.ok) continue;
+
+      const text = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/html");
+      const pageText = doc.body.innerText.toUpperCase();
+
+      const drawMap = {
+        "EARLY-BIRD":0, "EARLYBIRD":0,
+        "MORNING":1,
+        "MIDDAY":2,
+        "MID AFTERNOON":3, "MID-AFTERNOON":3, "MIDAFTERNOON":3,
+        "DRIVE TIME":4, "DRIVETIME":4,
+        "EVENING":5
+      };
+
+      const regex = /(\d{1,2})\s+([A-Z\s\-]+?)(?=\s*(DRAW|VERIFIED|AWAITING|UPCOMING|\d{5}|$))/gi;
+      let match;
+      while ((match = regex.exec(pageText)) !== null) {
+        const num = parseInt(match[1]);
+        if (num < 1 || num > 36) continue;
+
+        const beforeText = pageText.substring(0, match.index).toUpperCase();
+        let slotIdx = -1;
+        for (const key in drawMap) {
+          if (beforeText.includes(key)) {
+            slotIdx = drawMap[key];
+            break;
+          }
+        }
+
+        if (slotIdx >= 0) {
+          if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
+          if (dbCache[today][slotIdx] !== num) {
+            dbCache[today][slotIdx] = num;
+            await saveToDB(today, slotIdx, num, false); // Mega detection can be added later
+            console.log(`[UPDATE SUCCESS] ${SLOT_NAMES[slotIdx]} → ${num} (${MEANINGS[num]}) from ${url}`);
+            updated = true;
+          }
         }
       }
-    }
-    if(saves.length>0){Promise.all(saves);return true}
-    return false;
-  });
-}
 
-function fetchFromJamaicaIndex(){
-  return fetch("https://corsproxy.io/?url="+encodeURIComponent("https://www.jamaicaindex.com/lottery/results/cash-pot"),{signal:AbortSignal.timeout(15000)})
-  .then(function(r){if(!r.ok)throw new Error("bad");return r.text()})
-  .then(function(html){
-    if(html.length<1000)return false;
-    var slotMap={EARLYBIRD:0,MORNING:1,MIDDAY:2,MIDAFTERNOON:3,DRIVETIME:4,EVENING:5};
-    var slots=["EARLYBIRD","MORNING","MIDDAY","MIDAFTERNOON","DRIVETIME","EVENING"];
-    var ja=getJANow(),nowHour=ja.getHours()+ja.getMinutes()/60;
-    var today=getJAToday(),yest=getYesterday();
-    var cutoffs=[8.75,10.75,13.25,15.25,17.25,20.67];
-    var saves=[];
-    for(var s=0;s<slots.length;s++){
-      var re=new RegExp(slots[s]+"</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<","i");
-      var m=html.match(re);
-      if(!m)continue;
-      var num=parseInt(m[1]);
-      if(num<1||num>36)continue;
-      var si=slotMap[slots[s]];
-      var targetDate=nowHour>=cutoffs[si]?today:yest;
-      var isMega=html.substring(html.indexOf(slots[s]),html.indexOf(slots[s])+500).indexOf("gold")!==-1;
-      saves.push(saveToDB(targetDate,si,num,isMega));
+      if (updated) break; // stop after first successful source
+
+    } catch (err) {
+      console.warn(`Source ${url} failed:`, err);
     }
-    return saves.length>0;
-  });
+  }
+
+  if (updated) {
+    console.log("[CashPotJA] New results saved – refreshing UI");
+  } else {
+    console.log("[CashPotJA] No new draws found this poll");
+  }
 }
 
 // ── RENDER TODAY ──────────────────────────────────────────────
@@ -668,8 +681,8 @@ setInterval(function(){
   if(ns>=0)updateCountdown(ns);
 },1000);
 
-// Poll every 2 minutes during draw hours
-setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
+// Poll every 60 seconds during draw hours (improved from 120s)
+setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},60000);
 </script>
 </body>
-</html
+</html>

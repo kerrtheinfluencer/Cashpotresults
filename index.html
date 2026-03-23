@@ -109,6 +109,10 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
 .loading-spinner{text-align:center;padding:2rem;color:var(--text-dim);font-size:0.85rem}
 .loading-spinner::before{content:'⏳ '}
 .db-status{font-size:0.65rem;color:var(--text-dim);font-family:var(--font-mono);text-align:right;padding:0.25rem 0.5rem}
+.freshness-bar{display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.3rem 1rem;background:var(--green-pale);border-bottom:1px solid rgba(26,107,60,0.12);font-size:0.68rem;color:var(--text-mid);font-family:var(--font-mono)}
+.freshness-bar.stale{background:#fff8e1;border-bottom-color:rgba(212,135,74,0.2);color:var(--amber)}
+.freshness-dot{width:5px;height:5px;border-radius:50%;background:var(--green-light);flex-shrink:0}
+.freshness-bar.stale .freshness-dot{background:var(--amber)}
 @media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:0.65rem 0.75rem;gap:0.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
 </style>
 </head>
@@ -136,6 +140,7 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
   </nav>
 </header>
 <div class="visitor-bar"><span class="visitor-dot"></span><span><span class="visitor-count" id="visitorCount">--</span> visitors today</span></div>
+<div class="freshness-bar" id="freshnessBar"><span class="freshness-dot"></span><span id="freshnessText">Checking for results…</span></div>
 
 <main>
   <section id="today" class="section active">
@@ -243,6 +248,37 @@ var dbCache={};
 var dbLoaded=false;
 var liveMega={};
 
+// ── LOCAL STORAGE CACHE ───────────────────────────────────────
+var LS_KEY="cpja_cache_v1";
+var LS_META="cpja_cache_meta_v1";
+
+function saveToLocalCache(){
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify(dbCache));
+    localStorage.setItem(LS_META,JSON.stringify({saved:Date.now(),date:getJAToday()}));
+  }catch(e){}
+}
+
+function loadFromLocalCache(){
+  try{
+    var meta=JSON.parse(localStorage.getItem(LS_META)||"null");
+    if(!meta) return false;
+    // Discard cache if it's from a different day (Jamaica date)
+    if(meta.date && meta.date !== getJAToday()){
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_META);
+      return false;
+    }
+    var cached=JSON.parse(localStorage.getItem(LS_KEY)||"null");
+    if(!cached) return false;
+    // Merge into dbCache (don't overwrite keys that DB already loaded)
+    Object.keys(cached).forEach(function(d){
+      if(!dbCache[d]) dbCache[d]=cached[d];
+    });
+    return meta.saved||0;
+  }catch(e){return false;}
+}
+
 // ── DATE HELPERS ──────────────────────────────────────────────
 function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
 function getJAToday(){var j=getJANow();return j.getFullYear()+"-"+pad(j.getMonth()+1)+"-"+pad(j.getDate())}
@@ -291,6 +327,7 @@ function saveToDB(date,slot,number,isMega){
       liveMega[date][slot]=true;
     }
     console.log("Saved: "+date+" slot "+slot+" = "+number);
+    saveToLocalCache();
   }).catch(function(e){console.warn("Save failed:",e)});
 }
 
@@ -653,11 +690,57 @@ function subscribeToPush(){
 
 document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});
 
+// ── FRESHNESS BAR ────────────────────────────────────────────
+var lastSuccessfulPoll = 0;
+
+function updateFreshness(ts){
+  var bar=document.getElementById("freshnessBar");
+  var txt=document.getElementById("freshnessText");
+  if(!bar||!txt) return;
+  if(!ts){ txt.textContent="Checking for results…"; bar.className="freshness-bar"; return; }
+  var ago=Math.floor((Date.now()-ts)/1000);
+  var label;
+  if(ago<60) label="Updated just now";
+  else if(ago<120) label="Updated 1 min ago";
+  else if(ago<3600) label="Updated "+Math.floor(ago/60)+" mins ago";
+  else label="Updated "+Math.floor(ago/3600)+"h ago";
+  var stale=ago>300; // stale if >5 minutes
+  txt.textContent=label;
+  bar.className="freshness-bar"+(stale?" stale":"");
+}
+
+// Tick the freshness bar every 30 seconds
+setInterval(function(){ updateFreshness(lastSuccessfulPoll); }, 30000);
+
+// ── MIDNIGHT AUTO-REFRESH ─────────────────────────────────────
+// At midnight Jamaica time, wipe today's display and reload for the new day
+var _lastKnownDate = getJAToday();
+setInterval(function(){
+  var nowDate = getJAToday();
+  if(nowDate !== _lastKnownDate){
+    console.log("[CashPotJA] New day detected — refreshing for "+nowDate);
+    _lastKnownDate = nowDate;
+    // Clear stale localStorage cache for the old day
+    try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_META); }catch(e){}
+    // Reload everything fresh
+    loadAllFromDB().then(function(){
+      saveToLocalCache();
+      renderToday();
+      renderYesterday();
+      renderHistory();
+      renderStats();
+    });
+  }
+}, 60000); // check every minute
+
 // ── POLL ──────────────────────────────────────────────────────
 function poll(){
   var today=getJAToday();
   var beforeDraws=getDraws(today).slice();
   fetchLiveResults().then(function(){
+    lastSuccessfulPoll = Date.now();
+    saveToLocalCache();
+    updateFreshness(lastSuccessfulPoll);
     renderToday();
     renderYesterday();
     renderHistory();
@@ -677,13 +760,26 @@ if("serviceWorker" in navigator){
 }
 
 // ── INIT ───────────────────────────────────────────────────────
+// 1. Instantly render whatever is in localStorage (zero-wait)
+(function(){
+  var ts=loadFromLocalCache();
+  if(ts){
+    renderToday();
+    renderYesterday();
+    updateFreshness(ts);
+    console.log("[CashPotJA] Rendered from localStorage cache instantly");
+  }
+})();
+
+// 2. Then load from Supabase DB (replaces/fills cache)
 loadAllFromDB().then(function(){
+  saveToLocalCache();
   renderToday();
   renderYesterday();
   renderHistory();
   renderMeanings();
   renderStats();
-  poll();                    // immediate scrape
+  poll();                    // immediate scrape on top
 });
 
 // Countdown

@@ -330,18 +330,28 @@ async function fetchLiveResults(){
       const doc = parser.parseFromString(text, "text/html");
       const pageText = doc.body.innerText.toUpperCase();
 
-      // Slot headers from your debug
+      // Map header text → correct slot index.
+      // Both "MID AFTERNOON" and "MID-AFTERNOON" map to slot 3 so Drive Time
+      // and Evening land on slots 4 and 5 (not shifted by an extra entry).
       const slotHeaders = [
-        "EARLY-BIRD", "MORNING", "MIDDAY", 
-        "MID AFTERNOON", "MID-AFTERNOON", "DRIVE TIME", "EVENING"
+        { text: "EARLY-BIRD",    slot: 0 },
+        { text: "MORNING",       slot: 1 },
+        { text: "MIDDAY",        slot: 2 },
+        { text: "MID AFTERNOON", slot: 3 },
+        { text: "MID-AFTERNOON", slot: 3 },
+        { text: "DRIVE TIME",    slot: 4 },
+        { text: "EVENING",       slot: 5 },
       ];
 
-      for (let s = 0; s < 6; s++) {
-        const header = slotHeaders[s];
+      const slotFilled = [false,false,false,false,false,false];
+
+      for (const { text: header, slot: s } of slotHeaders) {
+        if (slotFilled[s]) continue; // already found a number for this slot
+
         const pos = pageText.indexOf(header);
         if (pos === -1) continue;
 
-        // Look for the next 1-2 digit number AFTER this header (exactly like your debug)
+        // Look for the next 1-2 digit number AFTER this header
         const after = pageText.substring(pos + header.length);
         const numMatch = after.match(/\b(\d{1,2})\b/);
         if (!numMatch) {
@@ -352,6 +362,7 @@ async function fetchLiveResults(){
         const num = parseInt(numMatch[1]);
         if (num < 1 || num > 36) continue;
 
+        slotFilled[s] = true;
         if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
 
         if (dbCache[today][s] !== num) {

@@ -10,8 +10,8 @@ A fast, mobile-first Cash Pot results website for Jamaica. Updated 6 times daily
 - **Statistics** — Hot/cold numbers, frequency analysis, gap tracking
 - **Push notifications** — Get alerted when new numbers drop
 - **PWA** — Add to home screen, works offline
+- **Supabase sync** — Live scrapes are persisted to Supabase and reloaded on startup
 - **SEO optimized** — Schema.org structured data, sitemap, meta tags
-- **Auto-update** — GitHub Actions scrapes Supreme Ventures every 30 mins during draw hours
 
 ## Deploy to GitHub Pages
 
@@ -28,30 +28,59 @@ A fast, mobile-first Cash Pot results website for Jamaica. Updated 6 times daily
 3. Go to **Settings → Pages → Source: Deploy from branch (main)**
 4. Your site will be live at `https://YOUR-USERNAME.github.io/cashpotja/`
 
-## Custom Domain
+## Supabase integration (required for automatic persistence)
 
-To use a custom domain like `cashpotja.com`:
-1. Add a `CNAME` file with your domain
-2. Configure DNS: CNAME record pointing to `YOUR-USERNAME.github.io`
-3. Enable HTTPS in GitHub Pages settings
+Create a table that stores one row per slot per day:
 
-## Updating Results
+```sql
+create table if not exists public.cashpot_results (
+  result_date date not null,
+  slot_idx smallint not null check (slot_idx between 0 and 5),
+  number smallint not null check (number between 1 and 36),
+  mega_ball boolean not null default false,
+  source text,
+  fetched_at timestamptz not null default now(),
+  primary key (result_date, slot_idx)
+);
 
-### Manual
-Edit `js/data.js` and add new entries to the `ALL_DATA` array:
-```javascript
-{ date:"2026-03-22", draws:[EB, MOR, MID, MA, DT, EVE] },
+alter table public.cashpot_results enable row level security;
+
+create policy "allow anon read cashpot results"
+  on public.cashpot_results
+  for select
+  to anon
+  using (true);
+
+create policy "allow anon upsert cashpot results"
+  on public.cashpot_results
+  for insert
+  to anon
+  with check (true);
+
+create policy "allow anon update cashpot results"
+  on public.cashpot_results
+  for update
+  to anon
+  using (true)
+  with check (true);
 ```
 
-### Automatic
-The GitHub Actions workflow (`.github/workflows/fetch-results.yml`) runs every 30 minutes during draw hours and attempts to scrape the latest results from Supreme Ventures. You may need to customize the scraping logic based on the current structure of their website.
+Also keep your `push_subscriptions` table and your push-sender job/edge function so users receive notifications when new slots are inserted.
+
+## How the auto-update flow now works
+
+1. Page loads and immediately renders local history.
+2. Site pulls recent rows from Supabase (`cashpot_results`) and overlays them.
+3. Polling scrapes live result sources.
+4. Any detected slot result is upserted back into Supabase.
+5. Returning users see persisted results immediately (including yesterday) even if the source site is temporarily down.
 
 ## Tech Stack
 
 - Pure HTML/CSS/JS — no build tools, no framework dependencies
-- Service Worker for offline support
+- Service Worker for offline support + notification click handling
 - Web Push API for notifications
-- GitHub Actions for auto-updates
+- Supabase REST API for persistence and push subscriptions
 
 ## Disclaimer
 

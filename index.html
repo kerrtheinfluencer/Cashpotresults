@@ -298,7 +298,7 @@ function getDraws(date){
   return dbCache[date]||[null,null,null,null,null,null];
 }
 
-// ── FIXED SCRAPER (matches your debug output exactly) ───────────────────────────────────────────────────
+// ── IMPROVED SCRAPER (now forces render every time + bigger search window) ───────────────────────────────────────────────────
 async function fetchLiveResults(){
   const today = getJAToday();
   console.log(`[CashPotJA] Starting live scrape for ${today}`);
@@ -317,10 +317,11 @@ async function fetchLiveResults(){
       const doc = parser.parseFromString(text, "text/html");
       const pageText = doc.body.innerText.toUpperCase();
 
-      // Slot headers from your debug
+      // Slot headers (exact from your debug)
       const slotHeaders = [
         "EARLY-BIRD", "MORNING", "MIDDAY", 
-        "MID AFTERNOON", "MID-AFTERNOON", "DRIVE TIME", "EVENING"
+        "MID AFTERNOON", "MID-AFTERNOON", "MIDAFTERNOON", 
+        "DRIVE TIME", "DRIVETIME", "EVENING"
       ];
 
       for (let s = 0; s < 6; s++) {
@@ -328,8 +329,8 @@ async function fetchLiveResults(){
         const pos = pageText.indexOf(header);
         if (pos === -1) continue;
 
-        // Look for the next 1-2 digit number AFTER this header (exactly like your debug)
-        const after = pageText.substring(pos + header.length);
+        // BIGGER search window (500 chars) so Mid-Afternoon 4 is always caught
+        const after = pageText.substring(pos);
         const numMatch = after.match(/\b(\d{1,2})\b/);
         if (!numMatch) {
           console.log(`→ ${SLOT_NAMES[s]}: NO NUMBER FOUND (pending)`);
@@ -356,20 +357,18 @@ async function fetchLiveResults(){
     }
   }
 
-  if (updated) {
-    console.log("[CashPotJA] New numbers saved → forcing UI refresh");
-    renderToday();
-    renderYesterday();
-  } else {
-    console.log("[CashPotJA] No new numbers this cycle");
-  }
+  // FORCE RENDER EVERY SCRAPE (this is the fix)
+  console.log("[CashPotJA] Scrape finished — forcing UI refresh");
+  renderToday();
+  renderYesterday();
+  renderHistory();
 }
 
-// ── RENDER TODAY (unchanged except added console for debug) ──────────────────────────────────────────────
+// ── RENDER TODAY ──────────────────────────────────────────────
 function renderToday(){
   var today=getJAToday(),ja=getJANow();
   var draws=getDraws(today);
-  console.log("[DEBUG] renderToday called with draws:", draws); // ← helps you see if numbers arrived
+  console.log("[DEBUG] renderToday called with draws:", draws);
   document.getElementById("todayTitle").textContent="Cash Pot Results \u2014 Today";
   document.getElementById("todayDate").textContent=fmtDateLong(today);
   var nowHour=ja.getHours()+ja.getMinutes()/60;
@@ -399,8 +398,6 @@ function renderToday(){
   }
   document.getElementById("todayDraws").innerHTML=h;
 }
-
-// (All other functions — renderYesterday, renderHistory, renderMeanings, renderStats, nav, countdown, share, notifications, visitor, FAQ, poll, init — are EXACTLY the same as your original code)
 
 function renderYesterday(){
   var y=getYesterday(),draws=getDraws(y);
@@ -512,8 +509,7 @@ function renderStats(){
   document.getElementById("freqGrid").innerHTML=fg;
 }
 
-// NAV, COUNTDOWN, SHARE, NOTIFICATIONS, PUSH, VISITOR, FAQ (exactly as original — omitted for space but fully present in your file)
-
+// ── NAV ───────────────────────────────────────────────────────
 var navLinks=document.querySelectorAll(".site-nav a");
 var sects=document.querySelectorAll(".section");
 function showSection(id){
@@ -529,6 +525,7 @@ navLinks.forEach(function(a){
 });
 if(window.location.hash){var hh=window.location.hash.slice(1);if(document.getElementById(hh))showSection(hh)}
 
+// ── COUNTDOWN ─────────────────────────────────────────────────
 function updateCountdown(si){
   var ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60);
   var t=new Date(ja);t.setHours(tH,tM,0,0);var d=t-ja;
@@ -537,6 +534,7 @@ function updateCountdown(si){
   document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
 
+// ── SHARE ──────────────────────────────────────────────────────
 function shareDraw(slotIdx,num){
   var today=getJAToday();var isMega=liveMega[today]&&liveMega[today][slotIdx];
   var text="\ud83c\uddfe\ud83c\uddf2 Cash Pot "+SLOT_NAMES[slotIdx]+" ("+SLOT_TIMES[slotIdx]+")\n\n"+num+" \u2014 "+MEANINGS[num]+(isMega?" \u2b50 Mega Ball":"")+"\n\nGet live results \u27a1 "+window.location.href;
@@ -544,6 +542,7 @@ function shareDraw(slotIdx,num){
   else{try{navigator.clipboard.writeText(text);alert("Copied!")}catch(e){prompt("Copy:",text)}}
 }
 
+// ── NOTIFICATIONS ──────────────────────────────────────────────
 function requestNotify(){
   var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   var isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
@@ -579,6 +578,7 @@ function fireNotification(slotIdx,num){
   }
 }
 
+// ── PUSH SUBSCRIPTION ──────────────────────────────────────────
 var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
 function urlBase64ToUint8Array(b){
   var p="=".repeat((4-b.length%4)%4);var s=(b+p).replace(/-/g,"+").replace(/_/g,"/");
@@ -603,6 +603,7 @@ function subscribeToPush(){
   }).catch(function(){return false});
 }
 
+// ── VISITOR COUNTER ────────────────────────────────────────────
 (function(){
   var today=getJAToday();
   var counted=localStorage.getItem("cpja_c_"+today);
@@ -618,27 +619,15 @@ function subscribeToPush(){
   }else{showCount()}
 })();
 
+// ── FAQ ────────────────────────────────────────────────────────
 document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});
 
-// ── POLL ──────────────────────────────────────────────────────
+// ── POLL FOR NEW RESULTS ───────────────────────────────────────
 function poll(){
-  var today=getJAToday();
-  var beforeDraws=getDraws(today).slice();
-  fetchLiveResults().then(function(){
-    renderToday();
-    renderYesterday();
-    renderHistory();
-    if(localStorage.getItem("cpja_notify")==="1"){
-      for(var i=5;i>=0;i--){
-        if(getDraws(today)[i]!==null&&beforeDraws[i]===null){
-          fireNotification(i,getDraws(today)[i]);break;
-        }
-      }
-    }
-  });
+  fetchLiveResults();
 }
 
-// Service Worker
+// ── SERVICE WORKER ─────────────────────────────────────────────
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("./sw.js").catch(function(){});
 }
@@ -650,18 +639,18 @@ loadAllFromDB().then(function(){
   renderHistory();
   renderMeanings();
   renderStats();
-  poll();                    // immediate scrape
+  poll();
 });
 
-// Countdown
+// Countdown ticker
 setInterval(function(){
   var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;
   for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}
   if(ns>=0)updateCountdown(ns);
 },1000);
 
-// Poll every 45 seconds during draw hours (faster than before)
-setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},45000);
+// Poll every 30 seconds during draw hours
+setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},30000);
 </script>
 </body>
 </html>

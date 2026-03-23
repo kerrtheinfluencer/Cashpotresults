@@ -1271,6 +1271,19 @@ function updateCountdown(si){
   document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
 
+function getLatestDateWithData(excludingDate){
+  var allDates=[];
+  for(var i=0;i<ALL_DATA.length;i++) allDates.push(ALL_DATA[i].date);
+  for(var k in liveResults){if(liveResults.hasOwnProperty(k)&&allDates.indexOf(k)===-1)allDates.push(k)}
+  allDates.sort();
+  for(var d=allDates.length-1;d>=0;d--){
+    if(allDates[d]===excludingDate)continue;
+    var draws=getMergedDraws(allDates[d]);
+    if(draws.some(function(n){return n!==null}))return allDates[d];
+  }
+  return null;
+}
+
 function renderYesterday(){
   var y=getYesterday(),draws=getMergedDraws(y);
   if(draws.every(function(d){return d===null})){

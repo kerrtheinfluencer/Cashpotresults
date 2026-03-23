@@ -1002,14 +1002,16 @@ function getMergedDraws(date){
   return base;
 }
 
-// Multi-source fetch v9 — tested against actual HTML structure
+// Multi-source fetch v10 — with Mega Ball detection
+// liveResults format: { "2026-03-22": { draws: [8,3,21,5,35,4], mega: [true,false,false,true,false,false] } }
+var liveMega={};  // liveMega[date] = [bool,bool,bool,bool,bool,bool]
+
 function fetchLiveResults(){
   return fetchFromCashpotInfo()
     .then(function(ok){ if(ok) return true; return fetchFromJamaicaIndex(); })
     .catch(function(){ return fetchFromJamaicaIndex().catch(function(){return false}); });
 }
 
-// Source 1: cashpotresults.info
 function fetchFromCashpotInfo(){
   var target="https://cashpotresults.info/";
   return fetch("https://corsproxy.io/?url="+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
@@ -1018,39 +1020,42 @@ function fetchFromCashpotInfo(){
     if(html.length<1000)return false;
     var today=getJAToday();
     var draws=[null,null,null,null,null,null];
+    var mega=[false,false,false,false,false,false];
     var slotNames=["EARLY-BIRD","MORNING","MIDDAY","MID AFTERNOON","DRIVE TIME","EVENING"];
-    var slotIdxs=[0,1,2,3,4,5];
 
     for(var s=0;s<slotNames.length;s++){
       var name=slotNames[s];
       var idx=html.indexOf(name+" #DRAW");
       if(idx===-1) continue;
+      var after=html.substring(idx,idx+600);
 
-      // Get 500 chars after the slot header
-      var after=html.substring(idx,idx+500);
-
-      // Find number between > and < that is 1-36
+      // Find number
       var numRe=/>\s*(\d{1,2})\s*</g;
       var m;
       while((m=numRe.exec(after))!==null){
         var num=parseInt(m[1]);
-        if(num>=1&&num<=36){
-          draws[slotIdxs[s]]=num;
-          break;
-        }
+        if(num>=1&&num<=36){ draws[s]=num; break; }
       }
+
+      // Detect Mega Ball — look for "ff-000001" (gold ball class) in the context
+      // cashpotresults.info uses wpdt-ff-000001 for gold ball images
+      if(after.indexOf("ff-000001")!==-1 && after.indexOf("ff-000001")<after.indexOf("ff-000000")){
+        mega[s]=true;
+      }
+      // Also check for gold text/class
+      if(after.toLowerCase().indexOf("gold")!==-1) mega[s]=true;
     }
 
     if(draws.some(function(d){return d!==null})){
       liveResults[today]=draws;
-      console.log("cashpotresults.info:",JSON.stringify(draws));
+      liveMega[today]=mega;
+      console.log("cashpotresults.info:",JSON.stringify(draws),"mega:",JSON.stringify(mega));
       return true;
     }
     return false;
   });
 }
 
-// Source 2: jamaicaindex.com (fallback)
 function fetchFromJamaicaIndex(){
   var target="https://www.jamaicaindex.com/lottery/results/cash-pot";
   return fetch("https://corsproxy.io/?url="+encodeURIComponent(target),{signal:AbortSignal.timeout(15000)})
@@ -1063,18 +1068,33 @@ function fetchFromJamaicaIndex(){
     var today=getJAToday(),yest=getYesterday();
     var cutoffs=[8.75,10.75,13.25,15.25,17.25,20.67];
     var todayDraws=[null,null,null,null,null,null];
+    var todayMega=[false,false,false,false,false,false];
     var yesterdayDraws=[null,null,null,null,null,null];
+
     for(var s=0;s<slots.length;s++){
+      // Get number
       var re=new RegExp(slots[s]+'</b>[\\s\\S]*?bbb1[^>]*>(\\d{1,2})<','i');
       var m=html.match(re);
       if(!m) continue;
       var num=parseInt(m[1]);
       if(num<1||num>36) continue;
       var si=slotMap[slots[s]];
-      if(nowHour>=cutoffs[si]) todayDraws[si]=num;
-      else yesterdayDraws[si]=num;
+
+      // Detect Mega Ball — jamaicaindex uses "lotto_no_gold" class or "gold" text
+      var slotSection=html.substring(html.indexOf(slots[s]),html.indexOf(slots[s])+500);
+      var hasMega=slotSection.indexOf("gold")!==-1;
+
+      if(nowHour>=cutoffs[si]){
+        todayDraws[si]=num;
+        todayMega[si]=hasMega;
+      } else {
+        yesterdayDraws[si]=num;
+      }
     }
-    if(todayDraws.some(function(d){return d!==null})) liveResults[today]=todayDraws;
+    if(todayDraws.some(function(d){return d!==null})){
+      liveResults[today]=todayDraws;
+      liveMega[today]=todayMega;
+    }
     if(yesterdayDraws.some(function(d){return d!==null})){
       if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
       for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
@@ -1110,8 +1130,9 @@ function renderToday(){
     h+='<div class="draw-row '+(done?"":"pending")+'">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
-      h+='<div class="draw-number">'+n+'</div>';
-      h+='<div class="draw-meaning">'+MEANINGS[n]+'</div>';
+      var isMega=liveMega[today]&&liveMega[today][i];
+      h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
+      h+='<div class="draw-meaning">'+MEANINGS[n]+(isMega?'<small style="color:#c8982c;font-weight:600">⭐ Mega Ball</small>':'')+'</div>';
       h+='<button class="draw-share" onclick="shareDraw('+i+","+n+')">Share</button>';
     }else{
       h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
@@ -1123,7 +1144,8 @@ function renderToday(){
 }
 
 function shareDraw(slotIdx,num){
-  var text="Cash Pot "+SLOT_NAMES[slotIdx]+" result: "+num+" \u2014 "+MEANINGS[num]+"\n\nGet live results \u27a1 "+window.location.href;
+  var today=getJAToday();var isMega=liveMega[today]&&liveMega[today][slotIdx];
+  var text="🇾f🇲 Cash Pot "+SLOT_NAMES[slotIdx]+" ("+SLOT_TIMES[slotIdx]+")\n\n"+num+" \u2014 "+MEANINGS[num]+(isMega?" ⭐ Mega Ball":"")+"\n\nGet live results \u27a1 "+window.location.href;
   if(navigator.share){
     navigator.share({title:"Cash Pot Result",text:text}).catch(function(){});
   }else{
@@ -1270,29 +1292,19 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
   if(hour>=19&&hour<=21)base+=55;
   var seed=0;for(var c=0;c<today.length;c++)seed+=today.charCodeAt(c);
   base+=seed%30;
-  // Real visitor counter
   var SB="https://xnokltjszzgaswccjpax.supabase.co";
   var SK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
   var hdrs={"Content-Type":"application/json","apikey":SK,"Authorization":"Bearer "+SK};
   var counted=localStorage.getItem("cpja_c_"+today);
-  function showCount(){
-    fetch(SB+"/rest/v1/page_views?view_date=eq."+today+"&select=count",{headers:hdrs})
-    .then(function(r){return r.json()}).then(function(d){
-      var c=(d&&d.length>0)?d[0].count:0;
-      document.getElementById("visitorCount").textContent=String(c||1);
-    }).catch(function(){document.getElementById("visitorCount").textContent="-"});
-  }
-  if(!counted){
-    fetch(SB+"/rest/v1/rpc/increment_page_view",{method:"POST",headers:hdrs,body:JSON.stringify({view_day:today})})
-    .then(function(){localStorage.setItem("cpja_c_"+today,"1");showCount()})
-    .catch(function(){showCount()});
-  } else { showCount(); }
+  function showCount(){fetch(SB+"/rest/v1/page_views?view_date=eq."+today+"&select=count",{headers:hdrs}).then(function(r){return r.json()}).then(function(d){document.getElementById("visitorCount").textContent=String((d&&d.length>0)?d[0].count:1)}).catch(function(){document.getElementById("visitorCount").textContent="-"})}
+  if(!counted){fetch(SB+"/rest/v1/rpc/increment_page_view",{method:"POST",headers:hdrs,body:JSON.stringify({view_day:today})}).then(function(){localStorage.setItem("cpja_c_"+today,"1");showCount()}).catch(function(){showCount()})}
+  else{showCount()}
 })();
 
 // ── Web Push Subscription ─────────────────────────────────────
 var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
 var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
-var SUPABASE_ANON_KEY=""; // Will need to be filled in
+var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);

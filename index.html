@@ -114,6 +114,29 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
 .freshness-dot{width:5px;height:5px;border-radius:50%;background:var(--green-light);flex-shrink:0}
 .freshness-bar.stale .freshness-dot{background:var(--amber)}
 @media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:0.65rem 0.75rem;gap:0.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--bg-card);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem 2rem;width:100%;max-width:500px;transform:translateY(100%);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1.25rem}
+.modal-num-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8b84a);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:white;text-shadow:0 1px 3px rgba(0,0,0,0.2);box-shadow:0 4px 16px rgba(200,152,44,0.35);margin:0 auto 0.75rem}
+.modal-meaning{text-align:center;font-family:var(--font-display);font-size:1.3rem;color:var(--green);margin-bottom:0.25rem}
+.modal-slot{text-align:center;font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:1.25rem}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:1.25rem}
+.modal-stat{background:var(--bg);border-radius:10px;padding:0.65rem 0.5rem;text-align:center}
+.modal-stat-val{font-family:var(--font-mono);font-size:1.2rem;font-weight:700;color:var(--green)}
+.modal-stat-lbl{font-size:0.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.15rem}
+.modal-share-row{display:flex;gap:0.5rem}
+.modal-share-btn{flex:1;padding:0.7rem;border-radius:10px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.15s}
+.modal-share-wa{background:#25D366;color:white}
+.modal-share-wa:hover{background:#1da851}
+.modal-share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light)}
+.modal-share-copy:hover{background:var(--green);color:white}
+.modal-close{display:block;width:100%;margin-top:0.75rem;padding:0.55rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:0.78rem;color:var(--text-dim);cursor:pointer;font-family:var(--font-body)}
+/* dynamic tab title indicator */
+.draw-row.new-result{animation:flashRow 1.5s ease}
+@keyframes flashRow{0%{background:#e8f5ee}100%{background:var(--bg-card)}}
 </style>
 </head>
 <body>
@@ -229,6 +252,22 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
   Results are for informational purposes only. Players must be 18+.</em><br><br>
   © 2024–2026 CashPotJA. All rights reserved.
 </footer>
+
+<!-- ── NUMBER DETAIL MODAL ── -->
+<div class="modal-overlay" id="numModal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-num-big" id="modalNum">—</div>
+    <div class="modal-meaning" id="modalMeaning"></div>
+    <div class="modal-slot" id="modalSlot"></div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="modal-share-row">
+      <button class="modal-share-btn modal-share-wa" id="modalWA" onclick="modalShareWA()">📲 WhatsApp</button>
+      <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy</button>
+    </div>
+    <button class="modal-close" onclick="closeNumModal()">Close</button>
+  </div>
+</div>
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────
@@ -452,15 +491,19 @@ function renderToday(){
     updateCountdown(ns);
   }
   var h="";
+  var beforeDraws=window._prevDraws||null;
+  window._prevDraws=draws.slice();
   for(var i=0;i<6;i++){
     var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
     var isMega=liveMega[today]&&liveMega[today][i];
-    h+='<div class="draw-row '+(done?"":"pending")+'">';
+    var isNew=done&&beforeDraws&&beforeDraws[i]===null;
+    h+='<div class="draw-row '+(done?"":"pending")+(isNew?" new-result":"")+'" '+(done?'onclick="openNumModal('+i+','+n+')" style="cursor:pointer"':'')+'">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
       h+='<div class="draw-meaning">'+MEANINGS[n]+(isMega?'<small style="color:#c8982c;font-weight:600">\u2b50 Mega Ball</small>':'')+'</div>';
-      h+='<button class="draw-share" onclick="shareDraw('+i+','+n+')">Share</button>';
+      h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
+      h+='</div>';
     }else{
       h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
       h+='<div class="draw-meaning" style="color:var(--text-dim)">'+(pend?"Upcoming":"Awaiting result")+'</div>';
@@ -468,6 +511,14 @@ function renderToday(){
     h+='</div>';
   }
   document.getElementById("todayDraws").innerHTML=h;
+  // Dynamic tab title: show the most recent completed draw
+  var lastDone=-1;
+  for(var ti=5;ti>=0;ti--){if(draws[ti]!==null){lastDone=ti;break}}
+  if(lastDone>=0){
+    document.title=SLOT_NAMES[lastDone]+": "+draws[lastDone]+" · CashPotJA";
+  } else {
+    document.title="Cash Pot Results Today Jamaica | CashPotJA";
+  }
 }
 
 // (All other functions — renderYesterday, renderHistory, renderMeanings, renderStats, nav, countdown, share, notifications, visitor, FAQ, poll, init — are EXACTLY the same as your original code)
@@ -607,12 +658,85 @@ function updateCountdown(si){
   document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
 
-function shareDraw(slotIdx,num){
-  var today=getJAToday();var isMega=liveMega[today]&&liveMega[today][slotIdx];
-  var text="\ud83c\uddfe\ud83c\uddf2 Cash Pot "+SLOT_NAMES[slotIdx]+" ("+SLOT_TIMES[slotIdx]+")\n\n"+num+" \u2014 "+MEANINGS[num]+(isMega?" \u2b50 Mega Ball":"")+"\n\nGet live results \u27a1 "+window.location.href;
-  if(navigator.share){navigator.share({title:"Cash Pot Result",text:text}).catch(function(){})}
-  else{try{navigator.clipboard.writeText(text);alert("Copied!")}catch(e){prompt("Copy:",text)}}
+// ── SHARE & MODAL ────────────────────────────────────────────
+var _modalSlot=-1, _modalNum=-1;
+
+function buildShareText(slotIdx, num, rich){
+  var today=getJAToday();
+  var isMega=liveMega[today]&&liveMega[today][slotIdx];
+  var seq=buildSeq();
+  var freq={}; for(var i=1;i<=36;i++) freq[i]=0;
+  for(var j=0;j<seq.length;j++) freq[seq[j]]++;
+  var rec=seq.slice(-180); var rf={}; for(var r=1;r<=36;r++) rf[r]=0;
+  for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
+  // last seen gap
+  var ls=-1; for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
+  var gap=ls===-1?999:(seq.length-1-ls);
+  var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
+
+  var line1="\uD83C\uDDEF\uD83C\uDDF2 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
+  var line2="\uD83D\uDD22 *"+num+"* \u2014 "+MEANINGS[num]+(isMega?" \u2B50 Mega Ball":"");
+  var line3="\uD83D\uDCC8 Drawn "+freq[num]+"\u00D7 all-time ("+pct+"%) \u00B7 "+rf[num]+"\u00D7 last 30 days";
+  var line4=gap===0?"\u26A1 Just played!":gap===1?"\u23F3 Last played 1 draw ago":"\u23F3 Last played "+gap+" draws ago";
+  var line5="\uD83D\uDCF1 Live results \u27A1 https://kerrtheinfluencer.github.io/Cashpotresults/";
+  return [line1,line2,line3,line4,"",line5].join("\n");
 }
+
+function openNumModal(slotIdx, num){
+  _modalSlot=slotIdx; _modalNum=num;
+  var today=getJAToday();
+  var isMega=liveMega[today]&&liveMega[today][slotIdx];
+  // Stats
+  var seq=buildSeq();
+  var freq={}; for(var i=1;i<=36;i++) freq[i]=0;
+  for(var j=0;j<seq.length;j++) freq[seq[j]]++;
+  var rec=seq.slice(-180); var rf={}; for(var r=1;r<=36;r++) rf[r]=0;
+  for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
+  var ls=-1; for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
+  var gap=ls===-1?999:(seq.length-1-ls);
+  var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
+  // Populate modal
+  var el=document.getElementById("modalNum"); el.textContent=num;
+  if(isMega) el.style.background="linear-gradient(135deg,#c8982c,#ffd700)";
+  else el.style.background="";
+  document.getElementById("modalMeaning").textContent=MEANINGS[num];
+  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" \u00B7 "+SLOT_TIMES[slotIdx]+(isMega?" \u00B7 \u2B50 Mega Ball":"");
+  document.getElementById("modalStats").innerHTML=
+    '<div class="modal-stat"><div class="modal-stat-val">'+freq[num]+'</div><div class="modal-stat-lbl">All-time</div></div>'+
+    '<div class="modal-stat"><div class="modal-stat-val">'+rf[num]+'</div><div class="modal-stat-lbl">Last 30d</div></div>'+
+    '<div class="modal-stat"><div class="modal-stat-val">'+(gap===0?"Now":gap===999?"Never":gap)+'</div><div class="modal-stat-lbl">Draws ago</div></div>';
+  document.getElementById("numModal").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+
+function closeNumModal(){
+  document.getElementById("numModal").classList.remove("open");
+  document.body.style.overflow="";
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById("numModal")) closeNumModal();
+}
+
+function modalShareWA(){
+  var text=buildShareText(_modalSlot,_modalNum,true);
+  var url="https://wa.me/?text="+encodeURIComponent(text);
+  window.open(url,"_blank");
+}
+
+function modalShareCopy(){
+  var text=buildShareText(_modalSlot,_modalNum,false);
+  var btn=document.getElementById("modalCopy");
+  try{
+    navigator.clipboard.writeText(text).then(function(){
+      btn.textContent="\u2713 Copied!";
+      setTimeout(function(){btn.textContent="\uD83D\uDCCB Copy";},2000);
+    });
+  }catch(e){prompt("Copy this:",text);}
+}
+
+// legacy — keep for any old callers
+function shareDraw(slotIdx,num){ openNumModal(slotIdx,num); }
 
 function requestNotify(){
   var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);

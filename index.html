@@ -1005,6 +1005,7 @@ function getMergedDraws(date){
 // Multi-source fetch v10 — with Mega Ball detection
 // liveResults format: { "2026-03-22": { draws: [8,3,21,5,35,4], mega: [true,false,false,true,false,false] } }
 var liveMega={};  // liveMega[date] = [bool,bool,bool,bool,bool,bool]
+var liveSources={}; // liveSources[date] = ["supabase"|"cashpotresults.info"|"jamaicaindex"|null]
 
 function fetchLiveResults(){
   return fetchFromCashpotInfo()
@@ -1049,6 +1050,7 @@ function fetchFromCashpotInfo(){
     if(draws.some(function(d){return d!==null})){
       liveResults[today]=draws;
       liveMega[today]=mega;
+      liveSources[today]=["cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info"];
       console.log("cashpotresults.info:",JSON.stringify(draws),"mega:",JSON.stringify(mega));
       return true;
     }
@@ -1094,14 +1096,77 @@ function fetchFromJamaicaIndex(){
     if(todayDraws.some(function(d){return d!==null})){
       liveResults[today]=todayDraws;
       liveMega[today]=todayMega;
+      liveSources[today]=["jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex"];
     }
     if(yesterdayDraws.some(function(d){return d!==null})){
       if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
-      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
+      if(!liveSources[yest]) liveSources[yest]=[null,null,null,null,null,null];
+      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null){ liveResults[yest][j]=yesterdayDraws[j]; liveSources[yest][j]="jamaicaindex"; }}
     }
     return todayDraws.some(function(d){return d!==null});
   });
 }
+
+
+// ── Supabase live sync (results + persistence) ─────────────────
+var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
+var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
+var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
+function sbHeaders(){return {"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+SUPABASE_ANON_KEY};}
+
+function mergeSupabaseRows(rows){
+  if(!rows||!rows.length)return;
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var ds=r.result_date||r.draw_date||r.date;
+    var si=typeof r.slot_idx==="number"?r.slot_idx:r.slot;
+    var n=r.number;
+    if(!ds||si===undefined||n===null||n===undefined)continue;
+    if(!liveResults[ds]) liveResults[ds]=[null,null,null,null,null,null];
+    if(!liveMega[ds]) liveMega[ds]=[false,false,false,false,false,false];
+    if(!liveSources[ds]) liveSources[ds]=[null,null,null,null,null,null];
+    if(si>=0&&si<6&&n>=1&&n<=36){
+      liveResults[ds][si]=n;
+      liveMega[ds][si]=!!r.mega_ball;
+      liveSources[ds][si]="supabase";
+    }
+  }
+}
+
+function loadSupabaseRecent(daysBack){
+  var from=new Date(getJANow());
+  from.setDate(from.getDate()-(daysBack||3));
+  var fromDate=from.getFullYear()+"-"+String(from.getMonth()+1).padStart(2,"0")+"-"+String(from.getDate()).padStart(2,"0");
+  var url=SUPABASE_URL+"/rest/v1/cashpot_results?select=result_date,slot_idx,number,mega_ball&result_date=gte."+fromDate+"&order=result_date.asc,slot_idx.asc";
+  return fetch(url,{headers:sbHeaders(),signal:AbortSignal.timeout(10000)})
+    .then(function(r){if(!r.ok)throw new Error("supabase");return r.json()})
+    .then(function(rows){mergeSupabaseRows(rows);return true})
+    .catch(function(){return false});
+}
+
+function persistDayToSupabase(date,draws,mega){
+  if(!draws||!SUPABASE_ANON_KEY)return Promise.resolve(false);
+  var payload=[];
+  for(var i=0;i<6;i++){
+    if(draws[i]!==null&&draws[i]!==undefined){
+      payload.push({
+        result_date:date,
+        slot_idx:i,
+        number:draws[i],
+        mega_ball:!!(mega&&mega[i]),
+        source:(liveSources[date]&&liveSources[date][i])||"live-scraper",
+        fetched_at:new Date().toISOString()
+      });
+    }
+  }
+  if(!payload.length)return Promise.resolve(false);
+  return fetch(SUPABASE_URL+"/rest/v1/cashpot_results",{
+    method:"POST",
+    headers:Object.assign({},sbHeaders(),{"Prefer":"resolution=merge-duplicates"}),
+    body:JSON.stringify(payload)
+  }).then(function(){return true}).catch(function(){return false});
+}
+
 
 
 var navLinks=document.querySelectorAll(".site-nav a");
@@ -1161,10 +1226,34 @@ function updateCountdown(si){
   document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
 
+function getLatestDateWithData(excludingDate){
+  var allDates=[];
+  for(var i=0;i<ALL_DATA.length;i++) allDates.push(ALL_DATA[i].date);
+  for(var k in liveResults){if(liveResults.hasOwnProperty(k)&&allDates.indexOf(k)===-1)allDates.push(k)}
+  allDates.sort();
+  for(var d=allDates.length-1;d>=0;d--){
+    if(allDates[d]===excludingDate)continue;
+    var draws=getMergedDraws(allDates[d]);
+    if(draws.some(function(n){return n!==null}))return allDates[d];
+  }
+  return null;
+}
+
 function renderYesterday(){
-  var y=getYesterday(),draws=getMergedDraws(y);
-  if(draws.every(function(d){return d===null})){document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
-  var h="";
+  var y=getYesterday(),draws=getMergedDraws(y),label="Yesterday";
+  if(draws.every(function(d){return d===null})){
+    var latest=getLatestDateWithData(getJAToday());
+    if(latest){
+      y=latest;
+      draws=getMergedDraws(y);
+      label="Most recent";
+    }
+  }
+  if(draws.every(function(d){return d===null})){
+    document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';
+    return;
+  }
+  var h='<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:0.4rem">'+label+' • '+fmtDateLong(y)+'</div>';
   for(var i=0;i<6;i++){
     var n=draws[i];if(n===null)continue;
     h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>';
@@ -1270,14 +1359,25 @@ function poll(){
       }
     }
     if(afterCount>lastKnownCount)lastKnownCount=afterCount;
+    var today=getJAToday();
+    var yest=getYesterday();
+    persistDayToSupabase(today,getMergedDraws(today),liveMega[today]||[false,false,false,false,false,false]);
+    persistDayToSupabase(yest,getMergedDraws(yest),liveMega[yest]||[false,false,false,false,false,false]);
   });
 }
 
 setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
 
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
-poll();
+loadSupabaseRecent(7).then(function(){
+  renderToday();renderYesterday();renderHistory();renderStats();
+  poll();
+});
 setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}if(ns>=0)updateCountdown(ns)},1000);
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(function(err){console.warn("SW registration failed",err);});
+}
 
 // Visitor counter
 (function(){
@@ -1302,9 +1402,6 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
 })();
 
 // ── Web Push Subscription ─────────────────────────────────────
-var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
-var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
-var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);

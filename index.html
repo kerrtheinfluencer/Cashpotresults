@@ -509,6 +509,7 @@ main {
       <h2 id="todayTitle">Cash Pot Results Today</h2>
       <div class="today-date" id="todayDate"></div>
       <div class="countdown" id="nextDraw" style="margin-top:0.35rem"></div>
+      <div class="countdown" id="dataFreshness" style="margin-top:0.25rem;color:#ffe08a"></div>
     </div>
     <div id="todayDraws"></div>
 
@@ -1005,6 +1006,7 @@ function getMergedDraws(date){
 // Multi-source fetch v10 — with Mega Ball detection
 // liveResults format: { "2026-03-22": { draws: [8,3,21,5,35,4], mega: [true,false,false,true,false,false] } }
 var liveMega={};  // liveMega[date] = [bool,bool,bool,bool,bool,bool]
+var liveSources={}; // liveSources[date] = ["supabase"|"cashpotresults.info"|"jamaicaindex"|null]
 
 function fetchLiveResults(){
   return fetchFromCashpotInfo()
@@ -1049,6 +1051,9 @@ function fetchFromCashpotInfo(){
     if(draws.some(function(d){return d!==null})){
       liveResults[today]=draws;
       liveMega[today]=mega;
+      liveSources[today]=["cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info","cashpotresults.info"];
+      for(var u=0;u<6;u++){if(draws[u]!==null)upsertAllDataDraw(today,u,draws[u]);}
+      markSynced();
       console.log("cashpotresults.info:",JSON.stringify(draws),"mega:",JSON.stringify(mega));
       return true;
     }
@@ -1094,14 +1099,97 @@ function fetchFromJamaicaIndex(){
     if(todayDraws.some(function(d){return d!==null})){
       liveResults[today]=todayDraws;
       liveMega[today]=todayMega;
+      liveSources[today]=["jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex","jamaicaindex"];
+      for(var t=0;t<6;t++){if(todayDraws[t]!==null)upsertAllDataDraw(today,t,todayDraws[t]);}
+      markSynced();
     }
     if(yesterdayDraws.some(function(d){return d!==null})){
       if(!liveResults[yest]) liveResults[yest]=[null,null,null,null,null,null];
-      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null) liveResults[yest][j]=yesterdayDraws[j]}
+      if(!liveSources[yest]) liveSources[yest]=[null,null,null,null,null,null];
+      for(var j=0;j<6;j++){if(yesterdayDraws[j]!==null){ liveResults[yest][j]=yesterdayDraws[j]; liveSources[yest][j]="jamaicaindex"; upsertAllDataDraw(yest,j,yesterdayDraws[j]); }}
     }
     return todayDraws.some(function(d){return d!==null});
   });
 }
+
+
+// ── Supabase live sync (results + persistence) ─────────────────
+var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
+var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
+var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
+function sbHeaders(){return {"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+SUPABASE_ANON_KEY};}
+
+var lastSyncAt=null;
+
+function upsertAllDataDraw(date,slotIdx,number){
+  var day=getDataForDate(date);
+  if(!day){
+    day={date:date,draws:[null,null,null,null,null,null]};
+    ALL_DATA.push(day);
+    ALL_DATA.sort(function(a,b){return a.date.localeCompare(b.date)});
+  }
+  day.draws[slotIdx]=number;
+}
+
+function markSynced(){
+  lastSyncAt=new Date();
+}
+
+function mergeSupabaseRows(rows){
+  if(!rows||!rows.length)return;
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var ds=r.result_date||r.draw_date||r.date;
+    var si=typeof r.slot_idx==="number"?r.slot_idx:r.slot;
+    var n=r.number;
+    if(!ds||si===undefined||n===null||n===undefined)continue;
+    if(!liveResults[ds]) liveResults[ds]=[null,null,null,null,null,null];
+    if(!liveMega[ds]) liveMega[ds]=[false,false,false,false,false,false];
+    if(!liveSources[ds]) liveSources[ds]=[null,null,null,null,null,null];
+    if(si>=0&&si<6&&n>=1&&n<=36){
+      liveResults[ds][si]=n;
+      liveMega[ds][si]=!!r.mega_ball;
+      liveSources[ds][si]="supabase";
+      upsertAllDataDraw(ds,si,n);
+    }
+  }
+}
+
+function loadSupabaseRecent(daysBack){
+  var from=new Date(getJANow());
+  from.setDate(from.getDate()-(daysBack||3));
+  var fromDate=from.getFullYear()+"-"+String(from.getMonth()+1).padStart(2,"0")+"-"+String(from.getDate()).padStart(2,"0");
+  var url=SUPABASE_URL+"/rest/v1/cashpot_results?select=result_date,slot_idx,number,mega_ball&result_date=gte."+fromDate+"&order=result_date.asc,slot_idx.asc";
+  return fetch(url,{headers:sbHeaders(),signal:AbortSignal.timeout(10000)})
+    .then(function(r){if(!r.ok)throw new Error("supabase");return r.json()})
+    .then(function(rows){mergeSupabaseRows(rows);markSynced();return true})
+    .catch(function(){return false});
+}
+
+function persistDayToSupabase(date,draws,mega){
+  if(!draws||!SUPABASE_ANON_KEY)return Promise.resolve(false);
+  var payload=[];
+  for(var i=0;i<6;i++){
+    if(draws[i]!==null&&draws[i]!==undefined){
+      upsertAllDataDraw(date,i,draws[i]);
+      payload.push({
+        result_date:date,
+        slot_idx:i,
+        number:draws[i],
+        mega_ball:!!(mega&&mega[i]),
+        source:(liveSources[date]&&liveSources[date][i])||"live-scraper",
+        fetched_at:new Date().toISOString()
+      });
+    }
+  }
+  if(!payload.length)return Promise.resolve(false);
+  return fetch(SUPABASE_URL+"/rest/v1/cashpot_results",{
+    method:"POST",
+    headers:Object.assign({},sbHeaders(),{"Prefer":"resolution=merge-duplicates"}),
+    body:JSON.stringify(payload)
+  }).then(function(){markSynced();return true}).catch(function(){return false});
+}
+
 
 
 var navLinks=document.querySelectorAll(".site-nav a");
@@ -1114,6 +1202,27 @@ function showSection(id){
 }
 navLinks.forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,"","#"+a.dataset.section)})});
 if(window.location.hash){var hh=window.location.hash.slice(1);if(document.getElementById(hh))showSection(hh)}
+
+function getExpectedCompletedSlots(nowHour){
+  var cutoffs=[8.75,10.75,13.25,15.25,17.25,20.67];
+  var c=0;
+  for(var i=0;i<cutoffs.length;i++){if(nowHour>=cutoffs[i])c++;}
+  return c;
+}
+
+function updateFreshnessStatus(){
+  var el=document.getElementById("dataFreshness");
+  if(!el)return;
+  var ja=getJANow();
+  var nowHour=ja.getHours()+ja.getMinutes()/60;
+  var draws=getMergedDraws(getJAToday());
+  var have=0;for(var i=0;i<6;i++){if(draws[i]!==null)have++;}
+  var expected=getExpectedCompletedSlots(nowHour);
+  var syncText=lastSyncAt?lastSyncAt.toLocaleTimeString("en-JM",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"--";
+  if(expected===0){el.textContent="⏳ Waiting on first draw • Last sync "+syncText;return;}
+  if(have<expected){el.textContent="⚠️ Sync lag: "+have+"/"+expected+" expected draws posted • Last sync "+syncText;return;}
+  el.textContent="✅ Live sync healthy • Last sync "+syncText;
+}
 
 function renderToday(){
   var today=getJAToday(),ja=getJANow(),draws=getMergedDraws(today);
@@ -1141,6 +1250,7 @@ function renderToday(){
     h+='</div>';
   }
   document.getElementById("todayDraws").innerHTML=h;
+  updateFreshnessStatus();
 }
 
 function shareDraw(slotIdx,num){
@@ -1163,8 +1273,11 @@ function updateCountdown(si){
 
 function renderYesterday(){
   var y=getYesterday(),draws=getMergedDraws(y);
-  if(draws.every(function(d){return d===null})){document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';return}
-  var h="";
+  if(draws.every(function(d){return d===null})){
+    document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">Yesterday is still syncing. Pulling fresh data now…</div>';
+    return;
+  }
+  var h='<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:0.4rem">Yesterday • '+fmtDateLong(y)+'</div>';
   for(var i=0;i<6;i++){
     var n=draws[i];if(n===null)continue;
     h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>';
@@ -1270,14 +1383,27 @@ function poll(){
       }
     }
     if(afterCount>lastKnownCount)lastKnownCount=afterCount;
+    var today=getJAToday();
+    var yest=getYesterday();
+    persistDayToSupabase(today,getMergedDraws(today),liveMega[today]||[false,false,false,false,false,false]);
+    persistDayToSupabase(yest,getMergedDraws(yest),liveMega[yest]||[false,false,false,false,false,false]);
+    updateFreshnessStatus();
   });
 }
 
-setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},120000);
+setInterval(function(){poll()},60000);
 
 renderToday();renderYesterday();renderHistory();renderMeanings();renderStats();
-poll();
+loadSupabaseRecent(14).then(function(){
+  renderToday();renderYesterday();renderHistory();renderStats();
+  if(getMergedDraws(getYesterday()).every(function(d){return d===null})){fetchLiveResults().then(function(){renderYesterday();renderToday();});}
+  poll();
+});
 setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}if(ns>=0)updateCountdown(ns)},1000);
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(function(err){console.warn("SW registration failed",err);});
+}
 
 // Visitor counter
 (function(){
@@ -1302,9 +1428,6 @@ setInterval(function(){var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=
 })();
 
 // ── Web Push Subscription ─────────────────────────────────────
-var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
-var SUPABASE_URL="https://xnokltjszzgaswccjpax.supabase.co";
-var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);

@@ -75,6 +75,14 @@ Also keep your `push_subscriptions` table and your push-sender job/edge function
 4. Any detected slot result is upserted back into Supabase.
 5. Returning users see persisted results immediately (including yesterday) even if the source site is temporarily down.
 
+
+## Accuracy guardrails
+
+- The UI now shows a live sync health badge (expected draws vs posted draws for the current Jamaica time window).
+- Yesterday is never silently replaced with older data; if yesterday is missing, the site shows a syncing state instead of stale numbers.
+- Supabase remains the source of truth overlay for recent results, while scraping continuously fills gaps.
+- The last 48 hours are treated as realtime-only windows (static bundled data is ignored there) to prevent stale Saturday/Sunday fallbacks.
+
 ## Tech Stack
 
 - Pure HTML/CSS/JS — no build tools, no framework dependencies

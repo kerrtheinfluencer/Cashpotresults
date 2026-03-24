@@ -525,12 +525,15 @@ function renderToday(){
   for(var i=0;i<6;i++){
     var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
     var isMega=liveMega[today]&&liveMega[today][i];
-    h+='<div class="draw-row '+(done?"":"pending")+'">';
+    var isNew=done&&prevDraws&&prevDraws[i]===null;
+    h+='<div class="draw-row '+(done?"":"pending")+(isNew?" new-result":"")+' '+(done?'onclick="openNumModal('+i+','+n+')" style="cursor:pointer"':'')+">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
-      h+='<div class="draw-meaning">'+MEANINGS[n]+(isMega?'<small style="color:#c8982c;font-weight:600">\u2b50 Mega Ball</small>':'')+'</div>';
-      h+='<button class="draw-share" onclick="shareDraw('+i+','+n+')">Share</button>';
+      h+='<div class="draw-meaning">'+MEANINGS[n];
+      if(isMega) h+='<small style="display:inline-flex;align-items:center;gap:0.25rem;background:linear-gradient(135deg,#7b5c00,#c8982c);color:#fff;font-size:0.6rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:4px;margin-left:0.35rem;vertical-align:middle">⭐ MEGA · $20→$960</small>';
+      h+='</div>';
+      h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
     }else{
       h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
       h+='<div class="draw-meaning" style="color:var(--text-dim)">'+(pend?"Upcoming":"Awaiting result")+'</div>';
@@ -538,6 +541,9 @@ function renderToday(){
     h+='</div>';
   }
   document.getElementById("todayDraws").innerHTML=h;
+  var lastDone=-1;
+  for(var ti=5;ti>=0;ti--){if(draws[ti]!==null){lastDone=ti;break}}
+  document.title=lastDone>=0?SLOT_NAMES[lastDone]+": "+draws[lastDone]+" \u00b7 CashPotJA":"Cash Pot Results Today Jamaica | CashPotJA";
 }
 
 // (All other functions — renderYesterday, renderHistory, renderMeanings, renderStats, nav, countdown, share, notifications, visitor, FAQ, poll, init — are EXACTLY the same as your original code)
@@ -551,7 +557,14 @@ function renderYesterday(){
   var h="";
   for(var i=0;i<6;i++){
     var n=draws[i];if(n===null)continue;
-    h+='<div class="draw-row"><div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div><div class="draw-number">'+n+'</div><div class="draw-meaning">'+MEANINGS[n]+'</div></div>';
+    var yMega=liveMega[y]&&liveMega[y][i];
+    h+='<div class="draw-row">';
+    h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
+    h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
+    h+='<div class="draw-meaning">'+MEANINGS[n];
+    if(yMega) h+='<small style="display:inline-flex;align-items:center;gap:0.25rem;background:linear-gradient(135deg,#7b5c00,#c8982c);color:#fff;font-size:0.6rem;font-weight:700;padding:0.15rem 0.45rem;border-radius:4px;margin-left:0.35rem;vertical-align:middle">⭐ MEGA · $20→$960</small>';
+    h+='</div>';
+    h+='</div>';
   }
   document.getElementById("yesterdayDraws").innerHTML=h;
 }
@@ -579,7 +592,13 @@ function renderHistory(){
     var dow=DOW_SHORT[getDOW(date)];
     h+='<div class="history-day"><div class="history-date"><span>'+dow+", "+fmtDateShort(date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+date+'</span></div><div class="history-draws">';
     for(var di=0;di<6;di++){
-      if(draws[di]!==null)h+='<div class="history-chip"><span class="history-chip-slot">'+SLOT_NAMES[di].substring(0,3)+'</span><span class="history-chip-num">'+draws[di]+'</span></div>';
+      if(draws[di]===null) continue;
+      var hMega=liveMega[date]&&liveMega[date][di];
+      h+='<div class="history-chip"'+(hMega?' style="background:#faf3e0;border-color:#c8982c"':'')+'>'
+        +'<span class="history-chip-slot">'+SLOT_NAMES[di].substring(0,3)+'</span>'
+        +'<span class="history-chip-num"'+(hMega?' style="color:#c8982c"':'')+'>'+draws[di]+'</span>'
+        +(hMega?'<span style="font-size:0.6rem;margin-left:0.1rem">⭐</span>':'')
+        +'</div>';
     }
     h+='</div></div>';
   }

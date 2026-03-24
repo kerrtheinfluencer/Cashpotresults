@@ -109,11 +109,12 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
 .loading-spinner{text-align:center;padding:2rem;color:var(--text-dim);font-size:0.85rem}
 .loading-spinner::before{content:'⏳ '}
 .db-status{font-size:0.65rem;color:var(--text-dim);font-family:var(--font-mono);text-align:right;padding:0.25rem 0.5rem}
+@media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:0.65rem 0.75rem;gap:0.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
+/* ── FRESHNESS BAR ── */
 .freshness-bar{display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.3rem 1rem;background:var(--green-pale);border-bottom:1px solid rgba(26,107,60,0.12);font-size:0.68rem;color:var(--text-mid);font-family:var(--font-mono)}
 .freshness-bar.stale{background:#fff8e1;border-bottom-color:rgba(212,135,74,0.2);color:var(--amber)}
 .freshness-dot{width:5px;height:5px;border-radius:50%;background:var(--green-light);flex-shrink:0}
 .freshness-bar.stale .freshness-dot{background:var(--amber)}
-@media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:0.65rem 0.75rem;gap:0.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
@@ -127,16 +128,28 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
 .modal-stat{background:var(--bg);border-radius:10px;padding:0.65rem 0.5rem;text-align:center}
 .modal-stat-val{font-family:var(--font-mono);font-size:1.2rem;font-weight:700;color:var(--green)}
 .modal-stat-lbl{font-size:0.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.15rem}
-.modal-share-row{display:flex;gap:0.5rem}
+.modal-share-row{display:flex;gap:0.5rem;flex-wrap:wrap}
 .modal-share-btn{flex:1;padding:0.7rem;border-radius:10px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.15s}
 .modal-share-wa{background:#25D366;color:white}
 .modal-share-wa:hover{background:#1da851}
-.modal-share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light)}
+.modal-share-fb{background:#1877F2;color:white}
+.modal-share-fb:hover{background:#1464d8}
+.modal-share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light);flex-basis:100%}
 .modal-share-copy:hover{background:var(--green);color:white}
 .modal-close{display:block;width:100%;margin-top:0.75rem;padding:0.55rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:0.78rem;color:var(--text-dim);cursor:pointer;font-family:var(--font-body)}
-/* dynamic tab title indicator */
+/* ── MEGA BALL BANNER ── */
+.mega-info-banner{background:linear-gradient(135deg,#7b5c00,#c8982c);border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;display:none}
+.mega-info-banner.show{display:block}
+.mega-info-title{font-size:0.72rem;font-weight:700;color:#fff8e1;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem}
+.mega-info-row{display:flex;justify-content:space-between;align-items:center;gap:0.5rem}
+.mega-info-item{text-align:center;flex:1}
+.mega-info-val{font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:#fff}
+.mega-info-lbl{font-size:0.56rem;color:rgba(255,248,225,0.75);text-transform:uppercase;letter-spacing:0.05em}
+.mega-info-divider{width:1px;background:rgba(255,255,255,0.2);align-self:stretch}
+/* ── NEW RESULT FLASH ── */
 .draw-row.new-result{animation:flashRow 1.5s ease}
 @keyframes flashRow{0%{background:#e8f5ee}100%{background:var(--bg-card)}}
+
 </style>
 </head>
 <body>
@@ -253,7 +266,6 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
   © 2024–2026 CashPotJA. All rights reserved.
 </footer>
 
-<!-- ── NUMBER DETAIL MODAL ── -->
 <div class="modal-overlay" id="numModal" onclick="closeModal(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -261,9 +273,22 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
     <div class="modal-meaning" id="modalMeaning"></div>
     <div class="modal-slot" id="modalSlot"></div>
     <div class="modal-stats" id="modalStats"></div>
+    <div class="mega-info-banner" id="megaBanner">
+      <div class="mega-info-title">⭐ Mega Ball Draw</div>
+      <div class="mega-info-row">
+        <div class="mega-info-item"><div class="mega-info-val">$10</div><div class="mega-info-lbl">Regular bet</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$260</div><div class="mega-info-lbl">Regular win</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$20</div><div class="mega-info-lbl">Mega bet</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$960</div><div class="mega-info-lbl">Mega win</div></div>
+      </div>
+    </div>
     <div class="modal-share-row">
       <button class="modal-share-btn modal-share-wa" id="modalWA" onclick="modalShareWA()">📲 WhatsApp</button>
-      <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy</button>
+      <button class="modal-share-btn modal-share-fb" id="modalFB" onclick="modalShareFB()">📘 Facebook</button>
+      <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy Text</button>
     </div>
     <button class="modal-close" onclick="closeNumModal()">Close</button>
   </div>
@@ -287,7 +312,7 @@ var dbCache={};
 var dbLoaded=false;
 var liveMega={};
 
-// ── LOCAL STORAGE CACHE ───────────────────────────────────────
+// ── LOCAL STORAGE CACHE ───────────────────────
 var LS_KEY="cpja_cache_v1";
 var LS_META="cpja_cache_meta_v1";
 
@@ -302,18 +327,10 @@ function loadFromLocalCache(){
   try{
     var meta=JSON.parse(localStorage.getItem(LS_META)||"null");
     if(!meta) return false;
-    // Discard cache if it's from a different day (Jamaica date)
-    if(meta.date && meta.date !== getJAToday()){
-      localStorage.removeItem(LS_KEY);
-      localStorage.removeItem(LS_META);
-      return false;
-    }
+    if(meta.date&&meta.date!==getJAToday()){localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_META);return false;}
     var cached=JSON.parse(localStorage.getItem(LS_KEY)||"null");
     if(!cached) return false;
-    // Merge into dbCache (don't overwrite keys that DB already loaded)
-    Object.keys(cached).forEach(function(d){
-      if(!dbCache[d]) dbCache[d]=cached[d];
-    });
+    Object.keys(cached).forEach(function(d){if(!dbCache[d])dbCache[d]=cached[d];});
     return meta.saved||0;
   }catch(e){return false;}
 }
@@ -374,15 +391,47 @@ function getDraws(date){
   return dbCache[date]||[null,null,null,null,null,null];
 }
 
-// ── SCRAPER ────────────────────────────────────────────────────
-// Uses Supabase Edge Function as a CORS proxy (primary),
-// with allorigins.win as a fallback — avoids browser CORS block.
-async function fetchLiveResults(){
-  const today = getJAToday();
-  console.log(`[CashPotJA] Starting live scrape for ${today}`);
+// ── FIXED SCRAPER (matches your debug output exactly) ───────────────────────────────────────────────────
+// Parse draw numbers from page text for a given target date label ("TODAY" or "YESTERDAY")
+function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday) {
+  const slotHeaders = [
+    { text: "EARLY-BIRD",    slot: 0 },
+    { text: "MORNING",       slot: 1 },
+    { text: "MIDDAY",        slot: 2 },
+    { text: "MID AFTERNOON", slot: 3 },
+    { text: "MID-AFTERNOON", slot: 3 },
+    { text: "DRIVE TIME",    slot: 4 },
+    { text: "EVENING",       slot: 5 },
+  ];
+  const slotFilled = [false,false,false,false,false,false];
+  const results = [];
+  for (const { text: header, slot: s } of slotHeaders) {
+    if (slotFilled[s]) continue;
+    const pos = pageText.indexOf(header);
+    if (pos === -1) continue;
+    const after = pageText.substring(pos + header.length);
+    const numMatch = after.match(/\b(\d{1,2})\b/);
+    if (!numMatch) continue;
+    const num = parseInt(numMatch[1]);
+    if (num < 1 || num > 36) continue;
+    // Time guard only for today (yesterday’s draws are always in the past)
+    if (!isYesterday && nowHour < SLOT_HOURS[s] - 0.08) continue;
+    slotFilled[s] = true;
+    results.push({ slot: s, num });
+  }
+  return results;
+}
 
-  // Primary: your own Supabase Edge Function (no CORS issues, most reliable)
-  // Fallback: allorigins public proxy
+async function fetchLiveResults(){
+  const today     = getJAToday();
+  const yesterday = getYesterday();
+  const nowHour   = getJANow().getHours() + getJANow().getMinutes() / 60;
+  console.log(`[CashPotJA] Scraping for today (${today}) and backfilling yesterday (${yesterday})`);
+
+  // Figure out which yesterday slots are still missing in DB
+  const ydrawsCached = getDraws(yesterday);
+  const yesterdayMissingSlots = ydrawsCached.some(n => n === null);
+
   const sources = [
     SB_URL + "/functions/v1/scrape-cashpot",
     "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://cashpotresults.info/")
@@ -406,55 +455,34 @@ async function fetchLiveResults(){
       const doc = parser.parseFromString(text, "text/html");
       const pageText = doc.body.innerText.toUpperCase();
 
-      // Map header text → correct slot index.
-      // Both "MID AFTERNOON" and "MID-AFTERNOON" map to slot 3 so Drive Time
-      // and Evening land on slots 4 and 5 (not shifted by an extra entry).
-      const slotHeaders = [
-        { text: "EARLY-BIRD",    slot: 0 },
-        { text: "MORNING",       slot: 1 },
-        { text: "MIDDAY",        slot: 2 },
-        { text: "MID AFTERNOON", slot: 3 },
-        { text: "MID-AFTERNOON", slot: 3 },
-        { text: "DRIVE TIME",    slot: 4 },
-        { text: "EVENING",       slot: 5 },
-      ];
-
-      const slotFilled = [false,false,false,false,false,false];
-
-      for (const { text: header, slot: s } of slotHeaders) {
-        if (slotFilled[s]) continue; // already found a number for this slot
-
-        const pos = pageText.indexOf(header);
-        if (pos === -1) continue;
-
-        // Look for the next 1-2 digit number AFTER this header
-        const after = pageText.substring(pos + header.length);
-        const numMatch = after.match(/\b(\d{1,2})\b/);
-        if (!numMatch) {
-          console.log(`→ ${SLOT_NAMES[s]}: NO NUMBER FOUND (pending)`);
-          continue;
-        }
-
-        const num = parseInt(numMatch[1]);
-        if (num < 1 || num > 36) continue;
-
-        // Time guard: never save a result for a draw that hasn't happened yet.
-        // Give a 5-minute window after draw time before accepting a number.
-        const drawHour = SLOT_HOURS[s];
-        const nowHour  = getJANow().getHours() + getJANow().getMinutes() / 60;
-        if (nowHour < drawHour - 0.08) { // 0.08h ≈ 5 minutes before draw
-          console.log(`→ ${SLOT_NAMES[s]}: skipped — draw time not reached yet`);
-          continue;
-        }
-
-        slotFilled[s] = true;
+      // ── Scrape TODAY ──
+      const todayResults = parseDrawsFromPage(pageText, today, nowHour, false);
+      for (const { slot: s, num } of todayResults) {
         if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
-
         if (dbCache[today][s] !== num) {
           dbCache[today][s] = num;
           await saveToDB(today, s, num, false);
-          console.log(`→ ${SLOT_NAMES[s]} UPDATED TO ${num} (${MEANINGS[num]})`);
+          console.log(`→ TODAY ${SLOT_NAMES[s]} = ${num} (${MEANINGS[num]})`);
           updated = true;
+        }
+      }
+
+      // ── Backfill YESTERDAY if any slots missing ──
+      // The source site shows yesterday’s draws in a "YESTERDAY" section or as a second date block.
+      // We search for the PREVIOUS date block after today’s results.
+      if (yesterdayMissingSlots) {
+        // Look for yesterday section: source site often has "YESTERDAY" heading or prior date
+        const yPos = pageText.indexOf("YESTERDAY");
+        const searchText = yPos !== -1 ? pageText.substring(yPos) : pageText;
+        const yResults = parseDrawsFromPage(searchText, yesterday, 25, true); // 25h = always past
+        for (const { slot: s, num } of yResults) {
+          if (!dbCache[yesterday]) dbCache[yesterday] = [null,null,null,null,null,null];
+          if (dbCache[yesterday][s] === null) { // only fill gaps, never overwrite
+            dbCache[yesterday][s] = num;
+            await saveToDB(yesterday, s, num, false);
+            console.log(`→ YESTERDAY ${SLOT_NAMES[s]} = ${num} (${MEANINGS[num]}) — backfilled`);
+            updated = true;
+          }
         }
       }
 
@@ -491,19 +519,15 @@ function renderToday(){
     updateCountdown(ns);
   }
   var h="";
-  var beforeDraws=window._prevDraws||null;
-  window._prevDraws=draws.slice();
   for(var i=0;i<6;i++){
     var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
     var isMega=liveMega[today]&&liveMega[today][i];
-    var isNew=done&&beforeDraws&&beforeDraws[i]===null;
-    h+='<div class="draw-row '+(done?"":"pending")+(isNew?" new-result":"")+'" '+(done?'onclick="openNumModal('+i+','+n+')" style="cursor:pointer"':'')+'">';
+    h+='<div class="draw-row '+(done?"":"pending")+'">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
       h+='<div class="draw-meaning">'+MEANINGS[n]+(isMega?'<small style="color:#c8982c;font-weight:600">\u2b50 Mega Ball</small>':'')+'</div>';
-      h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
-      h+='</div>';
+      h+='<button class="draw-share" onclick="shareDraw('+i+','+n+')">Share</button>';
     }else{
       h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
       h+='<div class="draw-meaning" style="color:var(--text-dim)">'+(pend?"Upcoming":"Awaiting result")+'</div>';
@@ -511,14 +535,6 @@ function renderToday(){
     h+='</div>';
   }
   document.getElementById("todayDraws").innerHTML=h;
-  // Dynamic tab title: show the most recent completed draw
-  var lastDone=-1;
-  for(var ti=5;ti>=0;ti--){if(draws[ti]!==null){lastDone=ti;break}}
-  if(lastDone>=0){
-    document.title=SLOT_NAMES[lastDone]+": "+draws[lastDone]+" · CashPotJA";
-  } else {
-    document.title="Cash Pot Results Today Jamaica | CashPotJA";
-  }
 }
 
 // (All other functions — renderYesterday, renderHistory, renderMeanings, renderStats, nav, countdown, share, notifications, visitor, FAQ, poll, init — are EXACTLY the same as your original code)
@@ -658,49 +674,50 @@ function updateCountdown(si){
   document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
 
-// ── SHARE & MODAL ────────────────────────────────────────────
+// ── SHARE & MODAL ────────────────────────────────
 var _modalSlot=-1, _modalNum=-1;
 
-function buildShareText(slotIdx, num, rich){
+function buildShareText(slotIdx,num){
   var today=getJAToday();
   var isMega=liveMega[today]&&liveMega[today][slotIdx];
   var seq=buildSeq();
-  var freq={}; for(var i=1;i<=36;i++) freq[i]=0;
+  var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
-  var rec=seq.slice(-180); var rf={}; for(var r=1;r<=36;r++) rf[r]=0;
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++) rf[r]=0;
   for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
-  // last seen gap
-  var ls=-1; for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
+  var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
   var gap=ls===-1?999:(seq.length-1-ls);
   var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
-
-  var line1="\uD83C\uDDEF\uD83C\uDDF2 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
-  var line2="\uD83D\uDD22 *"+num+"* \u2014 "+MEANINGS[num]+(isMega?" \u2B50 Mega Ball":"");
-  var line3="\uD83D\uDCC8 Drawn "+freq[num]+"\u00D7 all-time ("+pct+"%) \u00B7 "+rf[num]+"\u00D7 last 30 days";
-  var line4=gap===0?"\u26A1 Just played!":gap===1?"\u23F3 Last played 1 draw ago":"\u23F3 Last played "+gap+" draws ago";
-  var line5="\uD83D\uDCF1 Live results \u27A1 https://kerrtheinfluencer.github.io/Cashpotresults/";
-  return [line1,line2,line3,line4,"",line5].join("\n");
+  var line1="🇯🇲 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
+  var line2="🔢 *"+num+"* — "+MEANINGS[num];
+  var line2b=isMega?"⭐ *Mega Ball draw!* Bet $10 → win $260 · Bet $20 → win $960":"";
+  var line3="📈 Drawn "+freq[num]+"× all-time ("+pct+"%) · "+rf[num]+"× last 30 days";
+  var line4=gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago";
+  var line5="📱 Live results ➡ https://kerrtheinfluencer.github.io/Cashpotresults/";
+  var lines=[line1,line2];
+  if(line2b) lines.push(line2b);
+  lines.push(line3,line4,"",line5);
+  return lines.join("\n");
 }
 
-function openNumModal(slotIdx, num){
-  _modalSlot=slotIdx; _modalNum=num;
+function openNumModal(slotIdx,num){
+  _modalSlot=slotIdx;_modalNum=num;
   var today=getJAToday();
   var isMega=liveMega[today]&&liveMega[today][slotIdx];
-  // Stats
   var seq=buildSeq();
-  var freq={}; for(var i=1;i<=36;i++) freq[i]=0;
+  var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
-  var rec=seq.slice(-180); var rf={}; for(var r=1;r<=36;r++) rf[r]=0;
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++) rf[r]=0;
   for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
-  var ls=-1; for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
+  var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
   var gap=ls===-1?999:(seq.length-1-ls);
   var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
-  // Populate modal
-  var el=document.getElementById("modalNum"); el.textContent=num;
-  if(isMega) el.style.background="linear-gradient(135deg,#c8982c,#ffd700)";
-  else el.style.background="";
+  var el=document.getElementById("modalNum");el.textContent=num;
+  el.style.background=isMega?"linear-gradient(135deg,#c8982c,#ffd700)":"";
+  var banner=document.getElementById("megaBanner");
+  if(banner) banner.className="mega-info-banner"+(isMega?" show":"");
   document.getElementById("modalMeaning").textContent=MEANINGS[num];
-  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" \u00B7 "+SLOT_TIMES[slotIdx]+(isMega?" \u00B7 \u2B50 Mega Ball":"");
+  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(isMega?" · ⭐ Mega Ball":"");
   document.getElementById("modalStats").innerHTML=
     '<div class="modal-stat"><div class="modal-stat-val">'+freq[num]+'</div><div class="modal-stat-lbl">All-time</div></div>'+
     '<div class="modal-stat"><div class="modal-stat-val">'+rf[num]+'</div><div class="modal-stat-lbl">Last 30d</div></div>'+
@@ -719,24 +736,36 @@ function closeModal(e){
 }
 
 function modalShareWA(){
-  var text=buildShareText(_modalSlot,_modalNum,true);
-  var url="https://wa.me/?text="+encodeURIComponent(text);
-  window.open(url,"_blank");
+  var text=buildShareText(_modalSlot,_modalNum);
+  window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
+}
+
+function modalShareFB(){
+  var today=getJAToday();
+  var isMega=liveMega[today]&&liveMega[today][_modalSlot];
+  var teaser="🇯🇲 Cash Pot "+SLOT_NAMES[_modalSlot]+" ("+SLOT_TIMES[_modalSlot]+"): "
+    +_modalNum+" — "+MEANINGS[_modalNum]
+    +(isMega?" ⭐ Mega Ball — Bet $20 → win $960!":"")
+    +"\n\nLive results ➡ https://kerrtheinfluencer.github.io/Cashpotresults/";
+  window.open(
+    "https://www.facebook.com/sharer/sharer.php?u="
+    +encodeURIComponent("https://kerrtheinfluencer.github.io/Cashpotresults/")
+    +"&quote="+encodeURIComponent(teaser),
+    "_blank","width=620,height=500,noopener,noreferrer");
 }
 
 function modalShareCopy(){
-  var text=buildShareText(_modalSlot,_modalNum,false);
+  var text=buildShareText(_modalSlot,_modalNum);
   var btn=document.getElementById("modalCopy");
   try{
     navigator.clipboard.writeText(text).then(function(){
-      btn.textContent="\u2713 Copied!";
-      setTimeout(function(){btn.textContent="\uD83D\uDCCB Copy";},2000);
+      btn.textContent="✓ Copied!";
+      setTimeout(function(){btn.textContent="📋 Copy Text";},2000);
     });
   }catch(e){prompt("Copy this:",text);}
 }
 
-// legacy — keep for any old callers
-function shareDraw(slotIdx,num){ openNumModal(slotIdx,num); }
+function shareDraw(slotIdx,num){openNumModal(slotIdx,num);}
 
 function requestNotify(){
   var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -814,55 +843,36 @@ function subscribeToPush(){
 
 document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});
 
-// ── FRESHNESS BAR ────────────────────────────────────────────
-var lastSuccessfulPoll = 0;
+// ── FRESHNESS BAR ───────────────────────────
+var lastSuccessfulPoll=0;
 
 function updateFreshness(ts){
-  var bar=document.getElementById("freshnessBar");
-  var txt=document.getElementById("freshnessText");
+  var bar=document.getElementById("freshnessBar"),txt=document.getElementById("freshnessText");
   if(!bar||!txt) return;
-  if(!ts){ txt.textContent="Checking for results…"; bar.className="freshness-bar"; return; }
+  if(!ts){txt.textContent="Checking for results…";bar.className="freshness-bar";return;}
   var ago=Math.floor((Date.now()-ts)/1000);
-  var label;
-  if(ago<60) label="Updated just now";
-  else if(ago<120) label="Updated 1 min ago";
-  else if(ago<3600) label="Updated "+Math.floor(ago/60)+" mins ago";
-  else label="Updated "+Math.floor(ago/3600)+"h ago";
-  var stale=ago>300; // stale if >5 minutes
-  txt.textContent=label;
-  bar.className="freshness-bar"+(stale?" stale":"");
+  txt.textContent=ago<60?"Updated just now":ago<120?"Updated 1 min ago":ago<3600?"Updated "+Math.floor(ago/60)+" mins ago":"Updated "+Math.floor(ago/3600)+"h ago";
+  bar.className="freshness-bar"+(ago>300?" stale":"");
 }
+setInterval(function(){updateFreshness(lastSuccessfulPoll);},30000);
 
-// Tick the freshness bar every 30 seconds
-setInterval(function(){ updateFreshness(lastSuccessfulPoll); }, 30000);
-
-// ── MIDNIGHT AUTO-REFRESH ─────────────────────────────────────
-// At midnight Jamaica time, wipe today's display and reload for the new day
-var _lastKnownDate = getJAToday();
+// Midnight auto-refresh
+var _lastKnownDate=getJAToday();
 setInterval(function(){
-  var nowDate = getJAToday();
-  if(nowDate !== _lastKnownDate){
-    console.log("[CashPotJA] New day detected — refreshing for "+nowDate);
-    _lastKnownDate = nowDate;
-    // Clear stale localStorage cache for the old day
-    try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_META); }catch(e){}
-    // Reload everything fresh
-    loadAllFromDB().then(function(){
-      saveToLocalCache();
-      renderToday();
-      renderYesterday();
-      renderHistory();
-      renderStats();
-    });
+  var nowDate=getJAToday();
+  if(nowDate!==_lastKnownDate){
+    _lastKnownDate=nowDate;
+    try{localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_META);}catch(e){}
+    loadAllFromDB().then(function(){saveToLocalCache();renderToday();renderYesterday();renderHistory();renderStats();});
   }
-}, 60000); // check every minute
+},60000);
 
-// ── POLL ──────────────────────────────────────────────────────
+// ── POLL ─────────────────────────────────────────────────
 function poll(){
   var today=getJAToday();
   var beforeDraws=getDraws(today).slice();
   fetchLiveResults().then(function(){
-    lastSuccessfulPoll = Date.now();
+    lastSuccessfulPoll=Date.now();
     saveToLocalCache();
     updateFreshness(lastSuccessfulPoll);
     renderToday();
@@ -884,18 +894,12 @@ if("serviceWorker" in navigator){
 }
 
 // ── INIT ───────────────────────────────────────────────────────
-// 1. Instantly render whatever is in localStorage (zero-wait)
+// Instantly render from localStorage (zero-wait)
 (function(){
   var ts=loadFromLocalCache();
-  if(ts){
-    renderToday();
-    renderYesterday();
-    updateFreshness(ts);
-    console.log("[CashPotJA] Rendered from localStorage cache instantly");
-  }
+  if(ts){ renderToday(); renderYesterday(); updateFreshness(ts); }
 })();
 
-// 2. Then load from Supabase DB (replaces/fills cache)
 loadAllFromDB().then(function(){
   saveToLocalCache();
   renderToday();
@@ -903,7 +907,7 @@ loadAllFromDB().then(function(){
   renderHistory();
   renderMeanings();
   renderStats();
-  poll();                    // immediate scrape on top
+  poll();
 });
 
 // Countdown

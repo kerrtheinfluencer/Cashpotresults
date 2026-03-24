@@ -134,6 +134,8 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
 .modal-share-wa:hover{background:#1da851}
 .modal-share-fb{background:#1877F2;color:white}
 .modal-share-fb:hover{background:#1464d8}
+.modal-share-x{background:#000000;color:white}
+.modal-share-x:hover{background:#333333}
 .modal-share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light);flex-basis:100%}
 .modal-share-copy:hover{background:var(--green);color:white}
 .modal-close{display:block;width:100%;margin-top:0.75rem;padding:0.55rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:0.78rem;color:var(--text-dim);cursor:pointer;font-family:var(--font-body)}
@@ -288,6 +290,7 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
     <div class="modal-share-row">
       <button class="modal-share-btn modal-share-wa" id="modalWA" onclick="modalShareWA()">📲 WhatsApp</button>
       <button class="modal-share-btn modal-share-fb" id="modalFB" onclick="modalShareFB()">📘 Facebook</button>
+      <button class="modal-share-btn modal-share-x" id="modalX" onclick="modalShareX()">🐦 X / Twitter</button>
       <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy Text</button>
     </div>
     <button class="modal-close" onclick="closeNumModal()">Close</button>
@@ -677,7 +680,7 @@ function updateCountdown(si){
 // ── SHARE & MODAL ────────────────────────────────
 var _modalSlot=-1, _modalNum=-1;
 
-function buildShareText(slotIdx,num){
+function buildShareText(slotIdx,num,forX){
   var today=getJAToday();
   var isMega=liveMega[today]&&liveMega[today][slotIdx];
   var seq=buildSeq();
@@ -688,18 +691,26 @@ function buildShareText(slotIdx,num){
   var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
   var gap=ls===-1?999:(seq.length-1-ls);
   var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
+  var url="https://kerrtheinfluencer.github.io/Cashpotresults/";
+  if(forX){
+    // Clean plain text for X/Twitter: no *asterisks*, fits 280 chars
+    return "🇯🇲 Cash Pot "+SLOT_NAMES[slotIdx]+" ("+SLOT_TIMES[slotIdx]+")\n"
+      +num+" — "+MEANINGS[num]+(isMega?" ⭐ Mega Ball":"")+
+      "\nDrawn "+freq[num]+"× all-time · "+rf[num]+"× last 30d"
+      +(gap===0?"  ⚡ Just played!":gap===1?"  ⏳ 1 draw ago":"  ⏳ "+gap+" draws ago")+
+      "\n\n#CashPot #Jamaica\n"+url;
+  }
+  // Rich version for WhatsApp/Copy (*bold* works on WA)
   var line1="🇯🇲 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
   var line2="🔢 *"+num+"* — "+MEANINGS[num];
   var line2b=isMega?"⭐ *Mega Ball draw!* Bet $10 → win $260 · Bet $20 → win $960":"";
   var line3="📈 Drawn "+freq[num]+"× all-time ("+pct+"%) · "+rf[num]+"× last 30 days";
   var line4=gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago";
-  var line5="📱 Live results ➡ https://kerrtheinfluencer.github.io/Cashpotresults/";
-  var lines=[line1,line2];
-  if(line2b) lines.push(line2b);
+  var line5="📱 Live results ➡ "+url;
+  var lines=[line1,line2];if(line2b)lines.push(line2b);
   lines.push(line3,line4,"",line5);
   return lines.join("\n");
 }
-
 function openNumModal(slotIdx,num){
   _modalSlot=slotIdx;_modalNum=num;
   var today=getJAToday();
@@ -736,8 +747,13 @@ function closeModal(e){
 }
 
 function modalShareWA(){
-  var text=buildShareText(_modalSlot,_modalNum);
+  var text=buildShareText(_modalSlot,_modalNum,false);
   window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
+}
+
+function modalShareX(){
+  var tweet=buildShareText(_modalSlot,_modalNum,true);
+  window.open("https://x.com/intent/tweet?text="+encodeURIComponent(tweet),"_blank","width=600,height=500,noopener,noreferrer");
 }
 
 function modalShareFB(){
@@ -755,7 +771,7 @@ function modalShareFB(){
 }
 
 function modalShareCopy(){
-  var text=buildShareText(_modalSlot,_modalNum);
+  var text=buildShareText(_modalSlot,_modalNum,false);
   var btn=document.getElementById("modalCopy");
   try{
     navigator.clipboard.writeText(text).then(function(){
@@ -828,7 +844,9 @@ function subscribeToPush(){
 
 (function(){
   var today=getJAToday();
-  var counted=localStorage.getItem("cpja_c_"+today);
+  var lsKey="cpja_c_"+today;
+  var ssKey="cpja_s_"+today;
+  var counted=localStorage.getItem(lsKey)||sessionStorage.getItem(ssKey);
   function showCount(){
     sbFetch("/rest/v1/page_views?view_date=eq."+today+"&select=count")
     .then(function(d){document.getElementById("visitorCount").textContent=String((d&&d.length>0)?d[0].count:1)})
@@ -836,7 +854,7 @@ function subscribeToPush(){
   }
   if(!counted){
     sbFetch("/rest/v1/rpc/increment_page_view",{method:"POST",body:JSON.stringify({view_day:today})})
-    .then(function(){localStorage.setItem("cpja_c_"+today,"1");showCount()})
+    .then(function(){localStorage.setItem(lsKey,"1");sessionStorage.setItem(ssKey,"1");showCount();})
     .catch(function(){showCount()});
   }else{showCount()}
 })();

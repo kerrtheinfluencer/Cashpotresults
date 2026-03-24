@@ -426,7 +426,10 @@ function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday) {
     // Time guard only for today (yesterday’s draws are always in the past)
     if (!isYesterday && nowHour < SLOT_HOURS[s] - 0.08) continue;
     slotFilled[s] = true;
-    results.push({ slot: s, num });
+    // Detect Mega Ball: source page puts "MEGA" or gold-ball indicator near the number
+    const afterNum = after.substring(0, 300).toUpperCase();
+    const isMegaDraw = afterNum.includes("MEGA") || afterNum.includes("FFD700") || afterNum.includes("GOLD BALL");
+    results.push({ slot: s, num, isMega: isMegaDraw });
   }
   return results;
 }
@@ -466,12 +469,12 @@ async function fetchLiveResults(){
 
       // ── Scrape TODAY ──
       const todayResults = parseDrawsFromPage(pageText, today, nowHour, false);
-      for (const { slot: s, num } of todayResults) {
+      for (const { slot: s, num, isMega } of todayResults) {
         if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
         if (dbCache[today][s] !== num) {
           dbCache[today][s] = num;
-          await saveToDB(today, s, num, false);
-          console.log(`→ TODAY ${SLOT_NAMES[s]} = ${num} (${MEANINGS[num]})`);
+          await saveToDB(today, s, num, isMega||false);
+          console.log(`→ TODAY ${SLOT_NAMES[s]} = ${num} (${MEANINGS[num]})${isMega?" ⭐ MEGA":""}`);
           updated = true;
         }
       }
@@ -484,11 +487,11 @@ async function fetchLiveResults(){
         const yPos = pageText.indexOf("YESTERDAY");
         const searchText = yPos !== -1 ? pageText.substring(yPos) : pageText;
         const yResults = parseDrawsFromPage(searchText, yesterday, 25, true); // 25h = always past
-        for (const { slot: s, num } of yResults) {
+        for (const { slot: s, num, isMega } of yResults) {
           if (!dbCache[yesterday]) dbCache[yesterday] = [null,null,null,null,null,null];
           if (dbCache[yesterday][s] === null) { // only fill gaps, never overwrite
             dbCache[yesterday][s] = num;
-            await saveToDB(yesterday, s, num, false);
+            await saveToDB(yesterday, s, num, isMega||false);
             console.log(`→ YESTERDAY ${SLOT_NAMES[s]} = ${num} (${MEANINGS[num]}) — backfilled`);
             updated = true;
           }

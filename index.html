@@ -296,7 +296,6 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}
       <button class="modal-share-btn modal-share-wa" id="modalWA" onclick="modalShareWA()">📲 WhatsApp</button>
       <button class="modal-share-btn modal-share-fb" id="modalFB" onclick="modalShareFB()">📘 Facebook</button>
       <button class="modal-share-btn modal-share-x" id="modalX" onclick="modalShareX()">🐦 X / Twitter</button>
-      <button class="modal-share-btn modal-share-x" id="modalX" onclick="modalShareX()">🐦 X / Twitter</button>
       <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy Text</button>
     </div>
     <button class="modal-close" onclick="closeNumModal()">Close</button>
@@ -543,6 +542,7 @@ function renderToday(){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
       h+='<div class="draw-meaning">'+MEANINGS[n];
       if(isMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+      h+='<small style="display:block;font-size:0.62rem;color:var(--text-dim);margin-top:0.15rem;font-family:var(--font-mono)">'+(isMega?'🟡 Gold ball · Mega draw':'⚪ White ball · Regular draw')+'</small>';
       h+='</div>';
       h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
     }else{
@@ -574,6 +574,7 @@ function renderYesterday(){
     h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
     h+='<div class="draw-meaning">'+MEANINGS[n];
     if(yMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+    h+='<small style="display:block;font-size:0.62rem;color:var(--text-dim);margin-top:0.15rem;font-family:var(--font-mono)">'+(yMega?'🟡 Gold ball · Mega draw':'⚪ White ball · Regular draw')+'</small>';
     h+='</div></div>';
   }
   document.getElementById("yesterdayDraws").innerHTML=h;
@@ -873,9 +874,11 @@ function subscribeToPush(){
 
 (function(){
   var today=getJAToday();
-  var lsKey="cpja_c_"+today;
-  var ssKey="cpja_s_"+today;
-  var counted=localStorage.getItem(lsKey)||sessionStorage.getItem(ssKey);
+  var lsKey="cpja_v_"+today;
+  // Prevent double-counting on refresh: check localStorage AND a same-day cookie
+  function hasCookie(k){return document.cookie.split(";").some(function(c){return c.trim().startsWith(k+"=")})}
+  function setCookie(k){var e=new Date();e.setTime(e.getTime()+86400000);document.cookie=k+"=1;expires="+e.toUTCString()+";path=/;SameSite=Strict"}
+  var counted=localStorage.getItem(lsKey)||hasCookie(lsKey);
   function showCount(){
     sbFetch("/rest/v1/page_views?view_date=eq."+today+"&select=count")
     .then(function(d){document.getElementById("visitorCount").textContent=String((d&&d.length>0)?d[0].count:1)})
@@ -883,9 +886,9 @@ function subscribeToPush(){
   }
   if(!counted){
     sbFetch("/rest/v1/rpc/increment_page_view",{method:"POST",body:JSON.stringify({view_day:today})})
-    .then(function(){localStorage.setItem(lsKey,"1");sessionStorage.setItem(ssKey,"1");showCount();})
+    .then(function(){localStorage.setItem(lsKey,"1");setCookie(lsKey);showCount();})
     .catch(function(){showCount()});
-  }else{showCount()}
+  }else{showCount();}
 })();
 
 document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});

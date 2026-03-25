@@ -565,6 +565,7 @@ function renderToday(){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
       h+='<div class="draw-meaning">'+MEANINGS[n];
       if(isMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+      h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(isMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
       h+='</div>';
       h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
     }else{
@@ -596,6 +597,7 @@ function renderYesterday(){
     h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
     h+='<div class="draw-meaning">'+MEANINGS[n];
     if(yMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+    h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(yMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
     h+='</div></div>';
   }
   document.getElementById("yesterdayDraws").innerHTML=h;

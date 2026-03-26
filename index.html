@@ -408,10 +408,8 @@ function getDraws(date){
 
 // ── FIXED SCRAPER (matches your debug output exactly) ───────────────────────────────────────────────────
 // Parse draw numbers from page text for a given target date label ("TODAY" or "YESTERDAY")
-// Parses draw results. Detects MEGA (gold ball) and MONSTA (red ball) from raw HTML.
-// Supreme Ventures site labels them explicitly as MEGA and MONSTA.
-// cashpotresults.info shows two ball images per row (gold + white/red).
-// Returns addon bitmask: 0=none, 1=Mega, 2=Monsta, 3=both
+// Parses draw results from page text + raw HTML
+// Red ball on source site = Mega Ball (pays $960), White ball = regular ($260)
 function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday, rawHtml) {
   const slotHeaders = [
     { text: "EARLY-BIRD",    slot: 0 },
@@ -442,8 +440,7 @@ function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday, rawHtml)
     if (num < 1 || num > 36) continue;
     if (!isYesterday && nowHour < SLOT_HOURS[s] - 0.08) continue;
     slotFilled[s] = true;
-
-    let addon = 0;
+    let isMega = false;
     if (rawHtml) {
       const rPos = rawUp.indexOf(header);
       if (rPos !== -1) {
@@ -453,31 +450,11 @@ function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday, rawHtml)
           if (rp2 !== -1 && rp2 < rNext) rNext = rp2;
         }
         const slice = rawUp.substring(rPos, rNext);
-
-        // cashpotresults.info: red ball image = some add-on active
-        // Supreme Ventures: "MEGA" label + gold ball = Mega active; "MONSTA" label + red ball = Monsta active
-        if (slice.includes("MEGA") && slice.includes("MONSTA")) {
-          // Supreme Ventures style — check what ball follows each label
-          const megaIdx = slice.indexOf("MEGA");
-          const monstaIdx = slice.indexOf("MONSTA");
-          const megaChunk = slice.substring(megaIdx, megaIdx + 400);
-          const monstaChunk = slice.substring(monstaIdx, monstaIdx + 400);
-          // Gold ball = active (has gold/ffd700), white ball = inactive
-          const megaActive = megaChunk.includes("FFD700") || megaChunk.includes("GOLD")
-            || (megaChunk.includes("BALL") && !megaChunk.includes("WHITE"));
-          // Red ball = active (has red/c00/ff0), white ball = inactive
-          const monstaActive = monstaChunk.includes("FF0000") || monstaChunk.includes("RED")
-            || monstaChunk.includes("#C0") || monstaChunk.includes("C00");
-          if (megaActive)   addon |= 1;
-          if (monstaActive) addon |= 2;
-        } else {
-          // cashpotresults.info style — red ball = Monsta active
-          const hasRed = slice.includes("RED") && (slice.includes("BALL") || slice.includes(".PNG") || slice.includes("IMG"));
-          if (hasRed) addon |= 2;
-        }
+        isMega = (slice.includes("RED") && (slice.includes("BALL") || slice.includes(".PNG") || slice.includes("IMG")))
+               || slice.includes("MEGA");
       }
     }
-    results.push({ slot: s, num, isMega: addon });
+    results.push({ slot: s, num, isMega });
   }
   return results;
 }
@@ -580,19 +557,15 @@ function renderToday(){
   window._prevDraws=draws.slice();
   for(var i=0;i<6;i++){
     var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
-    var addon=liveAddons[today]?liveAddons[today][i]:0;
-    var hasMega=!!(addon&1);
-    var hasMonsta=!!(addon&2);
+    var isMega=liveMega[today]&&liveMega[today][i];
     var isNew=done&&prevDraws&&prevDraws[i]===null;
     h+='<div class="draw-row '+(done?"":"pending")+(isNew?" new-result":"")+'" '+(done?'onclick="openNumModal('+i+','+n+')" style="cursor:pointer"':'')+'">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
-      h+='<div class="draw-number"'+(hasMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
+      h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
       h+='<div class="draw-meaning">'+MEANINGS[n];
-      h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
-      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hasMega?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#fff':'background:#e8e0d0;color:#666')+'">'+(hasMega?'🟡 MEGA ✓':'🟡 MEGA ✗')+'</small>';
-      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hasMonsta?'background:#c0392b;color:#fff':'background:#e8e0d0;color:#666')+'">'+(hasMonsta?'🔴 MONSTA ✓':'🔴 MONSTA ✗')+'</small>';
-      h+='</span>';
+      if(isMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+      h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(isMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
       h+='</div>';
       h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
     }else{
@@ -618,17 +591,13 @@ function renderYesterday(){
   var h="";
   for(var i=0;i<6;i++){
     var n=draws[i];if(n===null)continue;
-    var yAddon=liveAddons[y]?liveAddons[y][i]:0;
-    var yHasMega=!!(yAddon&1);
-    var yHasMonsta=!!(yAddon&2);
+    var yMega=liveMega[y]&&liveMega[y][i];
     h+='<div class="draw-row">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
-    h+='<div class="draw-number"'+(yHasMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
+    h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
     h+='<div class="draw-meaning">'+MEANINGS[n];
-    h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
-    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yHasMega?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#fff':'background:#e8e0d0;color:#666')+'">'+(yHasMega?'🟡 MEGA ✓':'🟡 MEGA ✗')+'</small>';
-    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yHasMonsta?'background:#c0392b;color:#fff':'background:#e8e0d0;color:#666')+'">'+(yHasMonsta?'🔴 MONSTA ✓':'🔴 MONSTA ✗')+'</small>';
-    h+='</span>';
+    if(yMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
+    h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(yMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
     h+='</div></div>';
   }
   document.getElementById("yesterdayDraws").innerHTML=h;
@@ -766,9 +735,7 @@ var _modalSlot=-1, _modalNum=-1;
 
 function buildShareText(slotIdx,num,forX){
   var today=getJAToday();
-  var mAddon=liveAddons[today]?liveAddons[today][slotIdx]:0;
-  var isMega=!!(mAddon&1);
-  var isMonsta=!!(mAddon&2);
+  var isMega=liveMega[today]&&liveMega[today][slotIdx];
   var seq=buildSeq();
   var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
@@ -789,10 +756,7 @@ function buildShareText(slotIdx,num,forX){
   // Rich version for WhatsApp/Copy (*bold* works on WA)
   var line1="🇯🇲 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
   var line2="🔢 *"+num+"* — "+MEANINGS[num];
-  var addons2=[];
-  if(isMega) addons2.push("🟡 Mega Ball active");
-  if(isMonsta) addons2.push("🔴 Monsta Ball active");
-  var line2b=addons2.length?addons2.join(" & ")+" · Bet $20 → win $960":"";
+  var line2b=isMega?"⭐ *Mega Ball draw!* Bet $10 → win $260 · Bet $20 → win $960":"";
   var line3="📈 Drawn "+freq[num]+"× all-time ("+pct+"%) · "+rf[num]+"× last 30 days";
   var line4=gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago";
   var line5="📱 Live results ➡ "+url;
@@ -803,9 +767,7 @@ function buildShareText(slotIdx,num,forX){
 function openNumModal(slotIdx,num){
   _modalSlot=slotIdx;_modalNum=num;
   var today=getJAToday();
-  var shAddon=liveAddons[today]?liveAddons[today][slotIdx]:0;
-  var isMega=!!(shAddon&1);
-  var isMonsta=!!(shAddon&2);
+  var isMega=liveMega[today]&&liveMega[today][slotIdx];
   var seq=buildSeq();
   var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
@@ -817,12 +779,9 @@ function openNumModal(slotIdx,num){
   var el=document.getElementById("modalNum");el.textContent=num;
   el.style.background=isMega?"linear-gradient(135deg,#c8982c,#ffd700)":"";
   var banner=document.getElementById("megaBanner");
-  if(banner) banner.className="mega-info-banner"+((isMega||isMonsta)?" show":"");
+  if(banner) banner.className="mega-info-banner"+(isMega?" show":"");
   document.getElementById("modalMeaning").textContent=MEANINGS[num];
-  var addonParts=[];
-  if(isMega) addonParts.push("🟡 Mega Ball");
-  if(isMonsta) addonParts.push("🔴 Monsta Ball");
-  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(addonParts.length?" · "+addonParts.join(" & "):"");
+  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(isMega?" · ⭐ Mega Ball":"");
   document.getElementById("modalStats").innerHTML=
     '<div class="modal-stat"><div class="modal-stat-val">'+freq[num]+'</div><div class="modal-stat-lbl">All-time</div></div>'+
     '<div class="modal-stat"><div class="modal-stat-val">'+rf[num]+'</div><div class="modal-stat-lbl">Last 30d</div></div>'+

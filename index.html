@@ -341,14 +341,13 @@ function loadFromLocalCache(){
     if(!meta) return false;
     var cached=JSON.parse(localStorage.getItem(LS_KEY)||"null");
     if(!cached) return false;
-    // Always restore cached data (even from previous day) so yesterday shows instantly
-    // DB load will overwrite/fill gaps. Never delete old cache — just let DB win.
+    // Always restore cached data (even from previous day) — DB will overwrite/fill gaps
     Object.keys(cached).forEach(function(d){if(!dbCache[d])dbCache[d]=cached[d];});
     var cachedMega=JSON.parse(localStorage.getItem("cpja_mega_v1")||"null");
     if(cachedMega) Object.keys(cachedMega).forEach(function(d){if(!liveMega[d])liveMega[d]=cachedMega[d];});
     var ca=JSON.parse(localStorage.getItem("cpja_addons_v1")||"null");
     if(ca)Object.keys(ca).forEach(function(d){if(!liveAddons[d])liveAddons[d]=ca[d];});
-    // Return false if different day — forces DB reload, but data is still pre-loaded above
+    // Return false on new day so DB always reloads fresh, but data is pre-loaded above
     if(meta.date&&meta.date!==getJAToday()) return false;
     return meta.saved||0;
   }catch(e){return false;}
@@ -376,11 +375,13 @@ function loadAllFromDB(){
     rows.forEach(function(r){
       if(!dbCache[r.draw_date]) dbCache[r.draw_date]=[null,null,null,null,null,null];
       dbCache[r.draw_date][r.slot]=r.number;
-      if(r.is_mega){
+      // is_mega stored as integer: 0=none, 1=Mega, 2=Monsta, 3=both
+      var addon=typeof r.is_mega==="number"?r.is_mega:(r.is_mega?2:0);
+      if(addon){
         if(!liveMega[r.draw_date]) liveMega[r.draw_date]=[false,false,false,false,false,false];
-        liveMega[r.draw_date][r.slot]=true;
+        liveMega[r.draw_date][r.slot]=!!(addon&1); // true if Mega bit set
         if(!liveAddons[r.draw_date]) liveAddons[r.draw_date]=[0,0,0,0,0,0];
-        liveAddons[r.draw_date][r.slot]=typeof r.is_mega==="number"?r.is_mega:2;
+        liveAddons[r.draw_date][r.slot]=addon;
       }
     });
     dbLoaded=true;
@@ -395,15 +396,16 @@ function saveToDB(date,slot,number,isMega){
   return fetch(SB_URL+"/rest/v1/cashpot_results",{
     method:"POST",
     headers:Object.assign({},SB_HDR,{"Prefer":"resolution=merge-duplicates"}),
-    body:JSON.stringify({draw_date:date,slot:slot,number:number,is_mega:isMega})
+    body:JSON.stringify({draw_date:date,slot:slot,number:number,is_mega:isMega||0})
   }).then(function(){
     if(!dbCache[date]) dbCache[date]=[null,null,null,null,null,null];
     dbCache[date][slot]=number;
-    if(isMega) {
+    var addon=typeof isMega==="number"?isMega:(isMega?2:0);
+    if(addon){
       if(!liveMega[date]) liveMega[date]=[false,false,false,false,false,false];
-      liveMega[date][slot]=true;
+      liveMega[date][slot]=!!(addon&1);
       if(!liveAddons[date]) liveAddons[date]=[0,0,0,0,0,0];
-      liveAddons[date][slot]=typeof isMega==="number"?isMega:2;
+      liveAddons[date][slot]=addon;
     }
     console.log("Saved: "+date+" slot "+slot+" = "+number);
     saveToLocalCache();
@@ -996,15 +998,9 @@ setInterval(function(){
   var nowDate=getJAToday();
   if(nowDate!==_lastKnownDate){
     _lastKnownDate=nowDate;
-    // New day: reload DB (don't wipe local cache — yesterday data is still valid)
-    // The DB load will populate the new today's date and keep yesterday
+    // New day: reload DB without wiping cache — yesterday data stays visible
     loadAllFromDB().then(function(){
-      saveToLocalCache();
-      renderToday();
-      renderYesterday();
-      renderHistory();
-      renderStats();
-      poll(); // immediately try to get today's first draw
+      saveToLocalCache();renderToday();renderYesterday();renderHistory();renderStats();poll();
     });
   }
 },60000);
@@ -1036,33 +1032,26 @@ if("serviceWorker" in navigator){
 }
 
 // ── INIT ───────────────────────────────────────────────────────
-// Show a loading placeholder for yesterday while DB loads
-// Try local cache first (instant render if same day)
 (function(){
+  // Pre-load cache (restores yesterday even on new day)
   var ts=loadFromLocalCache();
-  // Only use cache if it was saved today AND has yesterday's data
   var yest=getYesterday();
   var hasYest=dbCache[yest]&&dbCache[yest].some(function(n){return n!==null;});
   if(ts&&hasYest){
-    renderToday();
-    renderYesterday();
-    updateFreshness(ts);
-  }else if(ts){
-    // Cache exists but no yesterday — render today from cache, keep loading for yesterday
-    renderToday();
-    updateFreshness(ts);
+    // Same day + has yesterday: render immediately from cache
+    renderToday(); renderYesterday(); updateFreshness(ts);
+  } else if(ts){
+    // Same day but no yesterday yet: render today from cache
+    renderToday(); updateFreshness(ts);
   }
+  // else: different day — data pre-loaded but return false, DB will render below
 })();
 
-// Always load from DB on page load — this gets yesterday + today from Supabase
+// Always load fresh from DB (gets today + yesterday + all history)
 loadAllFromDB().then(function(){
   saveToLocalCache();
-  renderToday();
-  renderYesterday();
-  renderHistory();
-  renderMeanings();
-  renderStats();
-  poll(); // scrape live after DB is loaded
+  renderToday(); renderYesterday(); renderHistory(); renderMeanings(); renderStats();
+  poll();
 });
 
 // Countdown

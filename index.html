@@ -454,12 +454,27 @@ function parseDrawsFromPage(pageText,targetDate,nowHour,isYesterday,rawHtml){
 async function fetchLiveResults(){
   const today     = getJAToday();
   const yesterday = getYesterday();
-  const nowHour   = getJANow().getHours() + getJANow().getMinutes() / 60;
-  console.log(`[CashPotJA] Scraping for today (${today}) and backfilling yesterday (${yesterday})`);
+  const nowJA     = getJANow();
+  const nowHour   = nowJA.getHours() + nowJA.getMinutes() / 60;
 
-  // Figure out which yesterday slots are still missing in DB
+  // Which today slots are we actually waiting for? Only slots whose draw time
+  // has passed by at least 5 minutes AND that we don't already have a number for.
+  const todayDraws = getDraws(today);
+  const slotsToFetch = [];
+  for(let s=0;s<6;s++){
+    if(todayDraws[s]===null && nowHour >= SLOT_HOURS[s] + 0.08){ // 5 min after draw time
+      slotsToFetch.push(s);
+    }
+  }
+
   const ydrawsCached = getDraws(yesterday);
   const yesterdayMissingSlots = ydrawsCached.some(n => n === null);
+
+  // Nothing to do right now — no slots are past their draw time and missing
+  if(slotsToFetch.length === 0 && !yesterdayMissingSlots){
+    console.log("[CashPotJA] No slots due yet, skipping scrape");
+    return;
+  }
 
   const sources = [
     SB_URL + "/functions/v1/scrape-cashpot",
@@ -477,32 +492,98 @@ async function fetchLiveResults(){
         signal: AbortSignal.timeout(20000),
         headers: headers
       });
-      if (!response.ok) { console.warn(`[CashPotJA] Source ${url} returned ${response.status}`); continue; }
+      if (!response.ok) { console.warn("[CashPotJA] Source "+url+" returned "+response.status); continue; }
 
-      const text=await response.text();
-      const parser=new DOMParser();
-      const doc=parser.parseFromString(text,"text/html");
-      const pageText=doc.body.innerText.toUpperCase();
-      for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(pageText,today,nowHour,false,text)){
-        if(!dbCache[today])dbCache[today]=[null,null,null,null,null,null];
-        if(dbCache[today][s]!==num){dbCache[today][s]=num;await saveToDB(today,s,num,addon||false);updated=true;}
+      const text = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text,"text/html");
+      const pageText = doc.body.innerText.toUpperCase();
+
+      // ── Find where TODAY's section starts on the page ──
+      // The source page shows today's date (e.g. "26TH MARCH 2026" or "MARCH 26")
+      // We look for today's date in the page to anchor our search.
+      // Build several date formats to search for:
+      const todayParts = today.split("-"); // ["2026","03","26"]
+      const monthNames = ["","JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+                          "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+      const monthName = monthNames[parseInt(todayParts[1])];
+      const dayNum = parseInt(todayParts[2]);
+      // Patterns: "26TH MARCH", "MARCH 26", "26 MARCH"
+      const datePat1 = dayNum+"TH "+monthName;
+      const datePat2 = dayNum+"ST "+monthName;
+      const datePat3 = dayNum+"ND "+monthName;
+      const datePat4 = dayNum+"RD "+monthName;
+      const datePat5 = monthName+" "+dayNum;
+      const datePats = [datePat1,datePat2,datePat3,datePat4,datePat5];
+
+      // Find where today's date appears in the page
+      let todaySection = -1;
+      for(const pat of datePats){
+        const idx = pageText.indexOf(pat);
+        if(idx !== -1){ todaySection = idx; break; }
       }
-      if(yesterdayMissingSlots){
-        const yp=pageText.indexOf("YESTERDAY"),st=yp!==-1?pageText.substring(yp):pageText,ry=yp!==-1?text.substring(text.toUpperCase().indexOf("YESTERDAY")):text;
-        for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(st,yesterday,25,true,ry)){
-          if(!dbCache[yesterday])dbCache[yesterday]=[null,null,null,null,null,null];
-          if(dbCache[yesterday][s]===null){dbCache[yesterday][s]=num;await saveToDB(yesterday,s,num,addon||false);updated=true;}
+
+      // ── Scrape TODAY: only accept slots we're waiting for ──
+      if(slotsToFetch.length > 0){
+        // Parse from today's section if found, otherwise from start
+        const searchFrom = todaySection !== -1 ? todaySection : 0;
+        // Find where yesterday's section starts to bound our today search
+        let yestSection = pageText.length;
+        const yestParts = yesterday.split("-");
+        const yMonthName = monthNames[parseInt(yestParts[1])];
+        const yDay = parseInt(yestParts[2]);
+        const yPats = [yDay+"TH "+yMonthName, yDay+"ST "+yMonthName, yDay+"ND "+yMonthName,
+                       yDay+"RD "+yMonthName, yMonthName+" "+yDay, "YESTERDAY"];
+        for(const pat of yPats){
+          const idx = pageText.indexOf(pat, todaySection > 0 ? todaySection : 0);
+          if(idx !== -1 && idx < yestSection && idx > searchFrom) yestSection = idx;
+        }
+
+        const todayPageText = pageText.substring(searchFrom, yestSection);
+        const todayRawHtml  = text.substring(
+          todaySection > 0 ? text.toUpperCase().indexOf(pageText.substring(todaySection, todaySection+20)) : 0,
+          yestSection < pageText.length ? text.toUpperCase().indexOf(pageText.substring(yestSection, yestSection+20)) : text.length
+        );
+
+        const todayResults = parseDrawsFromPage(todayPageText, today, nowHour, false, todayRawHtml || text);
+        for(const{slot:s,num,isMega:addon}of todayResults){
+          // CRITICAL: only save if this slot is one we're waiting for
+          if(!slotsToFetch.includes(s)) continue;
+          // Only save if slot is still empty (never overwrite today's existing result)
+          if(dbCache[today] && dbCache[today][s] !== null) continue;
+          if(!dbCache[today]) dbCache[today]=[null,null,null,null,null,null];
+          dbCache[today][s]=num;
+          await saveToDB(today,s,num,addon||false);
+          console.log("[CashPotJA] TODAY "+SLOT_NAMES[s]+"="+num+(addon?" addon="+addon:""));
+          updated=true;
         }
       }
-      if (updated) break;
+
+      // ── Backfill YESTERDAY (gaps only) ──
+      if(yesterdayMissingSlots){
+        const yp = pageText.indexOf("YESTERDAY");
+        const searchText = yp !== -1 ? pageText.substring(yp) : pageText;
+        const rawYest = yp !== -1 ? text.substring(text.toUpperCase().indexOf("YESTERDAY")) : text;
+        for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(searchText,yesterday,25,true,rawYest)){
+          if(!dbCache[yesterday]) dbCache[yesterday]=[null,null,null,null,null,null];
+          if(dbCache[yesterday][s]===null){
+            dbCache[yesterday][s]=num;
+            await saveToDB(yesterday,s,num,addon||false);
+            console.log("[CashPotJA] YEST "+SLOT_NAMES[s]+"="+num);
+            updated=true;
+          }
+        }
+      }
+
+      if(updated) break;
 
     } catch (err) {
-      console.warn(`Source failed:`, err);
+      console.warn("Source failed:", err);
     }
   }
 
-  if (updated) {
-    console.log("[CashPotJA] New numbers saved → forcing UI refresh");
+  if(updated){
+    console.log("[CashPotJA] Numbers saved → refreshing UI");
     renderToday();
     renderYesterday();
   } else {
@@ -970,8 +1051,36 @@ setInterval(function(){
   if(ns>=0)updateCountdown(ns);
 },1000);
 
-// Poll every 45 seconds during draw hours (faster than before)
-setInterval(function(){var h=getJANow().getHours();if(h>=8&&h<=21)poll()},45000);
+// Smart polling: every 60s normally, every 30s in the 20 min window after each draw time
+setInterval(function(){
+  var ja=getJANow();
+  var h=ja.getHours();
+  if(h<8||h>21) return; // outside draw hours
+  var nowHour=h+ja.getMinutes()/60;
+  // Check if we're within 20 minutes after any draw time with a missing slot
+  var today=getJAToday(),draws=getDraws(today);
+  var urgent=false;
+  for(var si=0;si<6;si++){
+    if(draws[si]===null && nowHour>=SLOT_HOURS[si]+0.08 && nowHour<SLOT_HOURS[si]+0.42){
+      urgent=true;break; // 0.42h = 25 min window
+    }
+  }
+  if(urgent) poll(); // called every 30s below too, so effectively 30s during urgent
+},60000);
+
+// Extra poll every 30 seconds during urgent windows only
+setInterval(function(){
+  var ja=getJANow();
+  var h=ja.getHours();
+  if(h<8||h>21) return;
+  var nowHour=h+ja.getMinutes()/60;
+  var today=getJAToday(),draws=getDraws(today);
+  for(var si=0;si<6;si++){
+    if(draws[si]===null && nowHour>=SLOT_HOURS[si]+0.08 && nowHour<SLOT_HOURS[si]+0.42){
+      poll();return;
+    }
+  }
+},30000);
 </script>
 </body>
 </html>

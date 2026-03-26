@@ -320,6 +320,7 @@ var MEANINGS={1:"Duppy",2:"Small Fire",3:"Dead",4:"Egg",5:"Thief",6:"Strong Man"
 var dbCache={};
 var dbLoaded=false;
 var liveMega={};
+var liveAddons={};
 
 // ── LOCAL STORAGE CACHE ───────────────────────
 var LS_KEY="cpja_cache_v1";
@@ -329,6 +330,7 @@ function saveToLocalCache(){
   try{
     localStorage.setItem(LS_KEY,JSON.stringify(dbCache));
     localStorage.setItem("cpja_mega_v1",JSON.stringify(liveMega));
+    localStorage.setItem("cpja_addons_v1",JSON.stringify(liveAddons));
     localStorage.setItem(LS_META,JSON.stringify({saved:Date.now(),date:getJAToday()}));
   }catch(e){}
 }
@@ -346,6 +348,8 @@ function loadFromLocalCache(){
     Object.keys(cached).forEach(function(d){if(!dbCache[d])dbCache[d]=cached[d];});
     var cachedMega=JSON.parse(localStorage.getItem("cpja_mega_v1")||"null");
     if(cachedMega) Object.keys(cachedMega).forEach(function(d){if(!liveMega[d])liveMega[d]=cachedMega[d];});
+    var ca=JSON.parse(localStorage.getItem("cpja_addons_v1")||"null");
+    if(ca)Object.keys(ca).forEach(function(d){if(!liveAddons[d])liveAddons[d]=ca[d];});
     return meta.saved||0;
   }catch(e){return false;}
 }
@@ -375,6 +379,8 @@ function loadAllFromDB(){
       if(r.is_mega){
         if(!liveMega[r.draw_date]) liveMega[r.draw_date]=[false,false,false,false,false,false];
         liveMega[r.draw_date][r.slot]=true;
+        if(!liveAddons[r.draw_date]) liveAddons[r.draw_date]=[0,0,0,0,0,0];
+        liveAddons[r.draw_date][r.slot]=typeof r.is_mega==="number"?r.is_mega:2;
       }
     });
     dbLoaded=true;
@@ -396,6 +402,8 @@ function saveToDB(date,slot,number,isMega){
     if(isMega) {
       if(!liveMega[date]) liveMega[date]=[false,false,false,false,false,false];
       liveMega[date][slot]=true;
+      if(!liveAddons[date]) liveAddons[date]=[0,0,0,0,0,0];
+      liveAddons[date][slot]=typeof isMega==="number"?isMega:2;
     }
     console.log("Saved: "+date+" slot "+slot+" = "+number);
     saveToLocalCache();
@@ -410,55 +418,39 @@ function getDraws(date){
 // Parse draw numbers from page text for a given target date label ("TODAY" or "YESTERDAY")
 // Parses draw results from page text + raw HTML
 // Red ball on source site = Mega Ball (pays $960), White ball = regular ($260)
-function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday, rawHtml) {
-  const slotHeaders = [
-    { text: "EARLY-BIRD",    slot: 0 },
-    { text: "MORNING",       slot: 1 },
-    { text: "MIDDAY",        slot: 2 },
-    { text: "MID AFTERNOON", slot: 3 },
-    { text: "MID-AFTERNOON", slot: 3 },
-    { text: "DRIVE TIME",    slot: 4 },
-    { text: "EVENING",       slot: 5 },
-  ];
-  const slotFilled = [false,false,false,false,false,false];
-  const results = [];
-  const rawUp = rawHtml ? rawHtml.toUpperCase() : "";
-
-  for (const { text: header, slot: s } of slotHeaders) {
-    if (slotFilled[s]) continue;
-    const pos = pageText.indexOf(header);
-    if (pos === -1) continue;
-    let nextPos = pageText.length;
-    for (const { text: h2 } of slotHeaders) {
-      const p2 = pageText.indexOf(h2, pos + header.length);
-      if (p2 !== -1 && p2 < nextPos) nextPos = p2;
-    }
-    const after = pageText.substring(pos + header.length, nextPos);
-    const numMatch = after.match(/\b(\d{1,2})\b/);
-    if (!numMatch) continue;
-    const num = parseInt(numMatch[1]);
-    if (num < 1 || num > 36) continue;
-    if (!isYesterday && nowHour < SLOT_HOURS[s] - 0.08) continue;
-    slotFilled[s] = true;
-    let isMega = false;
-    if (rawHtml) {
-      const rPos = rawUp.indexOf(header);
-      if (rPos !== -1) {
-        let rNext = rawUp.length;
-        for (const { text: h2 } of slotHeaders) {
-          const rp2 = rawUp.indexOf(h2, rPos + header.length);
-          if (rp2 !== -1 && rp2 < rNext) rNext = rp2;
-        }
-        const slice = rawUp.substring(rPos, rNext);
-        isMega = (slice.includes("RED") && (slice.includes("BALL") || slice.includes(".PNG") || slice.includes("IMG")))
-               || slice.includes("MEGA");
+function parseDrawsFromPage(pageText,targetDate,nowHour,isYesterday,rawHtml){
+  const H=[{text:"EARLY-BIRD",slot:0},{text:"MORNING",slot:1},{text:"MIDDAY",slot:2},
+    {text:"MID AFTERNOON",slot:3},{text:"MID-AFTERNOON",slot:3},{text:"DRIVE TIME",slot:4},{text:"EVENING",slot:5}];
+  const filled=[false,false,false,false,false,false],results=[],rU=rawHtml?rawHtml.toUpperCase():"";
+  for(const{text:hdr,slot:s}of H){
+    if(filled[s])continue;
+    const pos=pageText.indexOf(hdr);if(pos===-1)continue;
+    let nxt=pageText.length;
+    for(const{text:h2}of H){const p2=pageText.indexOf(h2,pos+hdr.length);if(p2!==-1&&p2<nxt)nxt=p2;}
+    const after=pageText.substring(pos+hdr.length,nxt);
+    const m=after.match(/\b(\d{1,2})\b/);if(!m)continue;
+    const num=parseInt(m[1]);if(num<1||num>36)continue;
+    if(!isYesterday&&nowHour<SLOT_HOURS[s]-0.08)continue;
+    filled[s]=true;
+    let addon=0;
+    if(rawHtml){
+      const rp=rU.indexOf(hdr);
+      if(rp!==-1){
+        let rn=rU.length;
+        for(const{text:h2}of H){const rp2=rU.indexOf(h2,rp+hdr.length);if(rp2!==-1&&rp2<rn)rn=rp2;}
+        const sl=rU.substring(rp,rn);
+        if(sl.includes("MEGA")&&sl.includes("MONSTA")){
+          const mi=sl.indexOf("MEGA"),si2=sl.indexOf("MONSTA");
+          const mc=sl.substring(mi,mi+400),sc=sl.substring(si2,si2+400);
+          if(mc.includes("FFD700")||mc.includes("GOLD")||(mc.includes("BALL")&&!mc.includes("WHITE")))addon|=1;
+          if(sc.includes("FF0000")||sc.includes("RED")||sc.includes("#C0")||sc.includes("C00"))addon|=2;
+        }else if(sl.includes("RED")&&(sl.includes("BALL")||sl.includes(".PNG")||sl.includes("IMG"))){addon=2;}
       }
     }
-    results.push({ slot: s, num, isMega });
+    results.push({slot:s,num,isMega:addon});
   }
   return results;
 }
-
 async function fetchLiveResults(){
   const today     = getJAToday();
   const yesterday = getYesterday();
@@ -487,37 +479,19 @@ async function fetchLiveResults(){
       });
       if (!response.ok) { console.warn(`[CashPotJA] Source ${url} returned ${response.status}`); continue; }
 
-      const text = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, "text/html");
-      const pageText = doc.body.innerText.toUpperCase();
-
-      // ── Scrape TODAY ──
-      const todayResults = parseDrawsFromPage(pageText, today, nowHour, false, text);
-      for (const { slot: s, num, isMega } of todayResults) {
-        if (!dbCache[today]) dbCache[today] = [null,null,null,null,null,null];
-        if (dbCache[today][s] !== num) {
-          dbCache[today][s] = num;
-          await saveToDB(today, s, num, isMega||false);
-          console.log("→ TODAY "+SLOT_NAMES[s]+" = "+num+" ("+(isMega?"RED BALL/MEGA":"white ball")+")");
-          updated = true;
-        }
+      const text=await response.text();
+      const parser=new DOMParser();
+      const doc=parser.parseFromString(text,"text/html");
+      const pageText=doc.body.innerText.toUpperCase();
+      for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(pageText,today,nowHour,false,text)){
+        if(!dbCache[today])dbCache[today]=[null,null,null,null,null,null];
+        if(dbCache[today][s]!==num){dbCache[today][s]=num;await saveToDB(today,s,num,addon||false);updated=true;}
       }
-
-      // ── Backfill YESTERDAY if any slots missing ──
-      if (yesterdayMissingSlots) {
-        const yPos = pageText.indexOf("YESTERDAY");
-        const searchText = yPos !== -1 ? pageText.substring(yPos) : pageText;
-        const rawYest = yPos !== -1 ? text.substring(text.toUpperCase().indexOf("YESTERDAY")) : text;
-        const yResults = parseDrawsFromPage(searchText, yesterday, 25, true, rawYest);
-        for (const { slot: s, num, isMega } of yResults) {
-          if (!dbCache[yesterday]) dbCache[yesterday] = [null,null,null,null,null,null];
-          if (dbCache[yesterday][s] === null) {
-            dbCache[yesterday][s] = num;
-            await saveToDB(yesterday, s, num, isMega||false);
-            console.log("→ YESTERDAY "+SLOT_NAMES[s]+" = "+num+" — backfilled ("+(isMega?"MEGA":"white")+")");
-            updated = true;
-          }
+      if(yesterdayMissingSlots){
+        const yp=pageText.indexOf("YESTERDAY"),st=yp!==-1?pageText.substring(yp):pageText,ry=yp!==-1?text.substring(text.toUpperCase().indexOf("YESTERDAY")):text;
+        for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(st,yesterday,25,true,ry)){
+          if(!dbCache[yesterday])dbCache[yesterday]=[null,null,null,null,null,null];
+          if(dbCache[yesterday][s]===null){dbCache[yesterday][s]=num;await saveToDB(yesterday,s,num,addon||false);updated=true;}
         }
       }
       if (updated) break;
@@ -563,9 +537,12 @@ function renderToday(){
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     if(done){
       h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
+      var addon=liveAddons[today]?liveAddons[today][i]:0;var hM=!!(addon&1);var hS=!!(addon&2);
       h+='<div class="draw-meaning">'+MEANINGS[n];
-      if(isMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
-      h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(isMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
+      h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
+      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hM?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#3d2800':'background:#e0e0e0;color:#777')+'">MEGA '+(hM?'✓':'✗')+'</small>';
+      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hS?'background:#c0392b;color:#fff':'background:#e0e0e0;color:#777')+'">MONSTA '+(hS?'✓':'✗')+'</small>';
+      h+='</span>';
       h+='</div>';
       h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
     }else{
@@ -595,9 +572,12 @@ function renderYesterday(){
     h+='<div class="draw-row">';
     h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
     h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
+    var yA=liveAddons[y]?liveAddons[y][i]:0;var yM=!!(yA&1);var yS=!!(yA&2);
     h+='<div class="draw-meaning">'+MEANINGS[n];
-    if(yMega) h+='<span class="mega-pill">⭐ MEGA · $20→$960</span>';
-    h+='<small style="display:block;font-size:0.63rem;color:var(--text-dim);margin-top:0.12rem">'+(yMega?'🔴 Red ball · Mega draw · $20→$960':'⚪ White ball · Regular draw · $10→$260')+'</small>';
+    h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
+    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yM?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#3d2800':'background:#e0e0e0;color:#777')+'">MEGA '+(yM?'✓':'✗')+'</small>';
+    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yS?'background:#c0392b;color:#fff':'background:#e0e0e0;color:#777')+'">MONSTA '+(yS?'✓':'✗')+'</small>';
+    h+='</span>';
     h+='</div></div>';
   }
   document.getElementById("yesterdayDraws").innerHTML=h;
@@ -735,7 +715,7 @@ var _modalSlot=-1, _modalNum=-1;
 
 function buildShareText(slotIdx,num,forX){
   var today=getJAToday();
-  var isMega=liveMega[today]&&liveMega[today][slotIdx];
+  var mA=liveAddons[today]?liveAddons[today][slotIdx]:0;var isMega=!!(mA&1);var isMonsta=!!(mA&2);
   var seq=buildSeq();
   var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
@@ -756,7 +736,8 @@ function buildShareText(slotIdx,num,forX){
   // Rich version for WhatsApp/Copy (*bold* works on WA)
   var line1="🇯🇲 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
   var line2="🔢 *"+num+"* — "+MEANINGS[num];
-  var line2b=isMega?"⭐ *Mega Ball draw!* Bet $10 → win $260 · Bet $20 → win $960":"";
+  var a2=[];if(isMega)a2.push("MEGA Ball");if(isMonsta)a2.push("MONSTA Ball");
+  var line2b=a2.length?a2.join(" & ")+" active · Bet $20 → win $960":"";
   var line3="📈 Drawn "+freq[num]+"× all-time ("+pct+"%) · "+rf[num]+"× last 30 days";
   var line4=gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago";
   var line5="📱 Live results ➡ "+url;
@@ -767,7 +748,7 @@ function buildShareText(slotIdx,num,forX){
 function openNumModal(slotIdx,num){
   _modalSlot=slotIdx;_modalNum=num;
   var today=getJAToday();
-  var isMega=liveMega[today]&&liveMega[today][slotIdx];
+  var sA=liveAddons[today]?liveAddons[today][slotIdx]:0;var isMega=!!(sA&1);var isMonsta=!!(sA&2);
   var seq=buildSeq();
   var freq={};for(var i=1;i<=36;i++) freq[i]=0;
   for(var j=0;j<seq.length;j++) freq[seq[j]]++;
@@ -779,9 +760,10 @@ function openNumModal(slotIdx,num){
   var el=document.getElementById("modalNum");el.textContent=num;
   el.style.background=isMega?"linear-gradient(135deg,#c8982c,#ffd700)":"";
   var banner=document.getElementById("megaBanner");
-  if(banner) banner.className="mega-info-banner"+(isMega?" show":"");
+  if(banner) banner.className="mega-info-banner"+((isMega||isMonsta)?" show":"");
   document.getElementById("modalMeaning").textContent=MEANINGS[num];
-  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(isMega?" · ⭐ Mega Ball":"");
+  var ap=[];if(isMega)ap.push("MEGA");if(isMonsta)ap.push("MONSTA");
+  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(ap.length?" · "+ap.join(" & "):"");
   document.getElementById("modalStats").innerHTML=
     '<div class="modal-stat"><div class="modal-stat-val">'+freq[num]+'</div><div class="modal-stat-lbl">All-time</div></div>'+
     '<div class="modal-stat"><div class="modal-stat-val">'+rf[num]+'</div><div class="modal-stat-lbl">Last 30d</div></div>'+

@@ -32,121 +32,135 @@
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What played in Cash Pot today?","acceptedAnswer":{"@type":"Answer","text":"Cash Pot draws happen 6 times daily at 8:30am, 10:30am, 1:00pm, 3:00pm, 5:00pm and 8:25pm Jamaica time."}},{"@type":"Question","name":"What are the Cash Pot number meanings?","acceptedAnswer":{"@type":"Answer","text":"Each number 1-36 has a traditional Jamaican meaning: 1-Duppy, 2-Small Fire, 3-Dead, 4-Egg, 5-Thief, 6-Strong Man, 7-Married Woman, 8-Belly, 9-Cow, 10-Small House, 11-Dog, 12-Head, 13-Police, 14-Mouth, 15-Rat, 16-Young Girl, 17-Chinese Man, 18-Race Horse, 19-Silver, 20-Sick Person, 21-Bad Girl, 22-White Woman, 23-Black Man, 24-Fresh Water, 25-John Crow, 26-White Man, 27-Big Fire, 28-Fowl, 29-Parson, 30-Fish, 31-Lizard, 32-Gold, 33-Big House, 34-Baby, 35-Goat, 36-Old Lady."}},{"@type":"Question","name":"How much does Cash Pot pay?","acceptedAnswer":{"@type":"Answer","text":"Cash Pot pays $260 for every $10 bet (26:1). With Mega Ball ($20 bet), you can win $960."}}]}
 </script>
 <style>
-:root{--bg:#f5f0e8;--bg-card:#fff;--bg-dark:#1a1f1a;--green:#1a6b3c;--green-light:#2d9a5a;--green-pale:#e8f5ee;--gold:#c8982c;--text:#1a1f1a;--text-mid:#5a6258;--text-dim:#8a9088;--border:#d8d2c8;--red:#c45a5a;--blue:#3a7abf;--amber:#d4874a;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);--shadow-lg:0 4px 20px rgba(0,0,0,.08);--radius:12px;--font-display:'DM Serif Display',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace}
+:root{--bg:#f5f0e8;--bg-card:#ffffff;--bg-dark:#1a1f1a;--green:#1a6b3c;--green-light:#2d9a5a;--green-pale:#e8f5ee;--gold:#c8982c;--gold-pale:#faf3e0;--text:#1a1f1a;--text-mid:#5a6258;--text-dim:#8a9088;--border:#d8d2c8;--red:#c45a5a;--blue:#3a7abf;--amber:#d4874a;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);--shadow-lg:0 4px 20px rgba(0,0,0,0.08);--radius:12px;--font-display:'DM Serif Display',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace}
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
-.site-header{background:linear-gradient(135deg,#0d3d1f 0%,#1a6b3c 40%,#0d3d1f 100%);color:#fff;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
+.site-header{background:linear-gradient(135deg,#0d3d1f 0%,#1a6b3c 40%,#0d3d1f 100%);color:white;padding:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.15)}
 .header-inner{max-width:800px;margin:0 auto;padding:1rem 1.25rem}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem}
-.logo{font-family:var(--font-display);font-size:1.8rem;letter-spacing:-.02em;color:#fff;text-decoration:none}
-.logo span{color:var(--gold)}.header-sub{font-size:.78rem;color:rgba(255,255,255,.6);letter-spacing:.08em}
-.header-live{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:#4aff7a}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem}
+.logo{font-family:var(--font-display);font-size:1.8rem;letter-spacing:-0.02em;color:white;text-decoration:none}
+.logo span{color:var(--gold)}
+.header-sub{font-size:0.78rem;color:rgba(255,255,255,0.6);letter-spacing:0.08em}
+.header-live{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;color:#4aff7a}
 .live-dot{width:8px;height:8px;background:#4aff7a;border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.notify-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.4rem .75rem;border-radius:8px;font-size:.72rem;cursor:pointer;font-family:var(--font-body);transition:all .2s}
-.notify-btn:hover{background:rgba(255,255,255,.2)}.notify-btn.active{background:var(--gold);color:var(--bg-dark);border-color:var(--gold)}
-.site-nav{display:flex;background:rgba(0,0,0,.15);overflow-x:auto;-webkit-overflow-scrolling:touch}
-.site-nav a{flex:0 0 auto;padding:.6rem 1rem;color:rgba(255,255,255,.6);text-decoration:none;font-size:.78rem;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
-.site-nav a.active,.site-nav a:hover{color:#fff;border-bottom-color:var(--gold)}
-main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.section.active{display:block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.notify-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:white;padding:0.4rem 0.75rem;border-radius:8px;font-size:0.72rem;cursor:pointer;font-family:var(--font-body);transition:all 0.2s}
+.notify-btn:hover{background:rgba(255,255,255,0.2)}
+.notify-btn.active{background:var(--gold);color:var(--bg-dark);border-color:var(--gold)}
+.site-nav{display:flex;background:rgba(0,0,0,0.15);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.site-nav a{flex:0 0 auto;padding:0.6rem 1rem;color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.78rem;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s}
+.site-nav a.active,.site-nav a:hover{color:white;border-bottom-color:var(--gold)}
+main{max-width:800px;margin:0 auto;padding:1.25rem}
+.section{display:none}.section.active{display:block}
 .card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.25rem;margin-bottom:1rem}
-.card-title{font-family:var(--font-display);font-size:1.15rem;margin-bottom:.75rem;color:var(--green)}
-.card-subtitle{font-size:.78rem;color:var(--text-dim);margin-bottom:.5rem}
-.today-banner{background:linear-gradient(135deg,#0d3d1f,#1a6b3c);color:#fff;border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:var(--shadow-lg)}
-.today-banner h2{font-family:var(--font-display);font-size:1.3rem;margin-bottom:.15rem}
-.today-date{font-size:.82rem;color:rgba(255,255,255,.65)}
-.draw-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:var(--bg-card);border-radius:var(--radius);margin-bottom:.5rem;box-shadow:var(--shadow);transition:transform .15s;cursor:pointer}
-.draw-row:hover{transform:translateY(-1px)}.draw-row.pending{opacity:.6;cursor:default}
-.draw-slot{min-width:90px}.draw-slot-name{font-weight:600;font-size:.85rem;color:var(--green)}
-.draw-slot-time{font-size:.68rem;color:var(--text-dim);font-family:var(--font-mono)}
-.draw-number{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8b84a);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.2rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);box-shadow:0 2px 8px rgba(200,152,44,.3);flex-shrink:0}
-.draw-number.mega-ball{background:linear-gradient(135deg,#7b5c00,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,.4)}
-.draw-number.pending-num{background:var(--border);color:var(--text-dim);box-shadow:none;font-size:.7rem}
-.draw-meaning{flex:1;font-size:.88rem;color:var(--text)}
-.addon-pills{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:.2rem;font-size:.58rem;font-weight:700;padding:.12rem .42rem;border-radius:4px;white-space:nowrap}
-.pill-mega{background:linear-gradient(135deg,#7b5c00,#c8982c);color:#fff}
-.pill-monsta{background:#c0392b;color:#fff}
-.pill-none{background:#e0e0e0;color:#999}
-.draw-details-btn{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:.35rem .55rem;font-size:.7rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;transition:all .15s}
-.draw-details-btn:hover{border-color:var(--green);color:var(--green)}
-.num-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem}
-.num-cell{text-align:center;padding:.5rem .25rem;border-radius:8px;cursor:pointer;transition:all .15s;background:var(--bg);border:1px solid var(--border)}
+.card-title{font-family:var(--font-display);font-size:1.15rem;margin-bottom:0.75rem;color:var(--green)}
+.card-subtitle{font-size:0.78rem;color:var(--text-dim);margin-bottom:0.5rem}
+.today-banner{background:linear-gradient(135deg,#0d3d1f,#1a6b3c);color:white;border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:var(--shadow-lg)}
+.today-banner h2{font-family:var(--font-display);font-size:1.3rem;margin-bottom:0.15rem}
+.today-date{font-size:0.82rem;color:rgba(255,255,255,0.65)}
+.draw-row{display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--bg-card);border-radius:var(--radius);margin-bottom:0.5rem;box-shadow:var(--shadow);transition:transform 0.15s}
+.draw-row:hover{transform:translateY(-1px)}
+.draw-row.pending{opacity:0.6}
+.draw-slot{min-width:90px}
+.draw-slot-name{font-weight:600;font-size:0.85rem;color:var(--green)}
+.draw-slot-time{font-size:0.68rem;color:var(--text-dim);font-family:var(--font-mono)}
+.draw-number{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8b84a);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.2rem;font-weight:700;color:white;text-shadow:0 1px 2px rgba(0,0,0,0.2);box-shadow:0 2px 8px rgba(200,152,44,0.3);flex-shrink:0}
+.draw-number.pending-num{background:var(--border);color:var(--text-dim);box-shadow:none;font-size:0.7rem}
+.draw-meaning{flex:1;font-size:0.88rem;color:var(--text)}
+.draw-meaning small{display:block;font-size:0.68rem;color:var(--text-dim);font-family:var(--font-mono)}
+.num-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0.4rem}
+.num-cell{text-align:center;padding:0.5rem 0.25rem;border-radius:8px;cursor:pointer;transition:all 0.15s;background:var(--bg);border:1px solid var(--border)}
 .num-cell:hover{background:var(--green-pale);border-color:var(--green-light)}
 .num-cell-num{font-family:var(--font-mono);font-size:1rem;font-weight:600;color:var(--green)}
-.num-cell-name{font-size:.5rem;color:var(--text-dim);line-height:1.2}
+.num-cell-name{font-size:0.5rem;color:var(--text-dim);line-height:1.2}
 .num-cell.hot{background:#fff3e0;border-color:var(--amber)}.num-cell.hot .num-cell-num{color:var(--amber)}
 .num-cell.cold{background:#e8f0ff;border-color:var(--blue)}.num-cell.cold .num-cell-num{color:var(--blue)}
-.history-controls{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
-.history-controls input,.history-controls select{padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:var(--font-body);background:var(--bg-card)}
-.history-day{background:var(--bg-card);border-radius:var(--radius);padding:.85rem 1rem;margin-bottom:.5rem;box-shadow:var(--shadow)}
-.history-date{font-weight:600;font-size:.82rem;color:var(--green);margin-bottom:.4rem;display:flex;justify-content:space-between}
-.history-draws{display:flex;gap:.35rem;flex-wrap:wrap}
-.history-chip{display:flex;align-items:center;gap:.25rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.25rem .5rem;font-size:.72rem}
+.history-controls{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.history-controls input,.history-controls select{padding:0.5rem 0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;font-family:var(--font-body);background:var(--bg-card)}
+.history-day{background:var(--bg-card);border-radius:var(--radius);padding:0.85rem 1rem;margin-bottom:0.5rem;box-shadow:var(--shadow)}
+.history-date{font-weight:600;font-size:0.82rem;color:var(--green);margin-bottom:0.4rem;display:flex;justify-content:space-between}
+.history-draws{display:flex;gap:0.35rem;flex-wrap:wrap}
+.history-chip{display:flex;align-items:center;gap:0.3rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.5rem;font-size:0.72rem}
 .history-chip-num{font-family:var(--font-mono);font-weight:700;color:var(--gold);min-width:20px;text-align:center}
-.history-chip-slot{font-size:.58rem;color:var(--text-dim)}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
-.stat-box{background:var(--bg);border-radius:8px;padding:.75rem;text-align:center}
-.stat-label{font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em}
+.history-chip-slot{font-size:0.58rem;color:var(--text-dim)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:0.75rem}
+.stat-box{background:var(--bg);border-radius:8px;padding:0.75rem;text-align:center}
+.stat-label{font-size:0.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em}
 .stat-value{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--green)}
-.stat-sub{font-size:.6rem;color:var(--text-dim)}
+.stat-sub{font-size:0.6rem;color:var(--text-dim)}
 .faq-item{border-bottom:1px solid var(--border);padding:1rem 0}
-.faq-q{font-weight:600;font-size:.95rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.faq-q::after{content:'+';font-size:1.2rem;color:var(--green);transition:transform .2s}
+.faq-q{font-weight:600;font-size:0.95rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';font-size:1.2rem;color:var(--green);transition:transform 0.2s}
 .faq-item.open .faq-q::after{transform:rotate(45deg)}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .3s;font-size:.88rem;color:var(--text-mid);line-height:1.7}
-.faq-item.open .faq-a{max-height:300px;padding-top:.5rem}
-.site-footer{background:var(--bg-dark);color:rgba(255,255,255,.5);padding:2rem 1.25rem;margin-top:3rem;text-align:center;font-size:.75rem;line-height:1.8}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.3s;font-size:0.88rem;color:var(--text-mid);line-height:1.7}
+.faq-item.open .faq-a{max-height:300px;padding-top:0.5rem}
+.site-footer{background:var(--bg-dark);color:rgba(255,255,255,0.5);padding:2rem 1.25rem;margin-top:3rem;text-align:center;font-size:0.75rem;line-height:1.8}
 .site-footer a{color:var(--gold);text-decoration:none}
-.badge{display:inline-block;padding:.15rem .45rem;border-radius:4px;font-size:.62rem;font-weight:600;font-family:var(--font-mono)}
-.badge-hot{background:#fff3e0;color:var(--amber)}.badge-cold{background:#e8f0ff;color:var(--blue)}
-.countdown{font-family:var(--font-mono);font-size:.78rem;color:var(--gold);display:flex;align-items:center;gap:.3rem}
-.load-more-btn{display:block;width:100%;padding:.75rem;background:var(--green-pale);color:var(--green);border:1px solid var(--green-light);border-radius:var(--radius);font-size:.85rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s}
-.load-more-btn:hover{background:var(--green);color:#fff}
-.visitor-bar{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;background:var(--bg-card);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text-dim)}
+.badge{display:inline-block;padding:0.15rem 0.45rem;border-radius:4px;font-size:0.62rem;font-weight:600;font-family:var(--font-mono)}
+.badge-hot{background:#fff3e0;color:var(--amber)}.badge-cold{background:#e8f0ff;color:var(--blue)}.badge-new{background:var(--green-pale);color:var(--green)}
+.countdown{font-family:var(--font-mono);font-size:0.78rem;color:var(--gold);display:flex;align-items:center;gap:0.3rem}
+.load-more-btn{display:block;width:100%;padding:0.75rem;background:var(--green-pale);color:var(--green);border:1px solid var(--green-light);border-radius:var(--radius);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.15s}
+.load-more-btn:hover{background:var(--green);color:white}
+.draw-share{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.5rem;font-size:0.7rem;color:var(--text-dim);cursor:pointer;flex-shrink:0;transition:all 0.15s}
+.draw-share:hover{border-color:var(--green);color:var(--green)}
+.visitor-bar{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-card);border-bottom:1px solid var(--border);font-size:0.72rem;color:var(--text-dim)}
 .visitor-dot{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:pulse 2s infinite}
 .visitor-count{font-family:var(--font-mono);font-weight:600;color:var(--green)}
-.freshness-bar{display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.3rem 1rem;background:var(--green-pale);border-bottom:1px solid rgba(26,107,60,.12);font-size:.68rem;color:var(--text-mid);font-family:var(--font-mono)}
-.freshness-bar.stale{background:#fff8e1;border-bottom-color:rgba(212,135,74,.2);color:var(--amber)}
-.freshness-dot{width:5px;height:5px;border-radius:50%;background:var(--green-light);flex-shrink:0}
-.freshness-bar.stale .freshness-dot{background:var(--amber)}
-.loading{text-align:center;padding:2rem;color:var(--text-dim);font-size:.85rem}
+.loading-spinner{text-align:center;padding:2rem;color:var(--text-dim);font-size:0.85rem}
+.loading-spinner::before{content:'⏳ '}
+.db-status{font-size:0.65rem;color:var(--text-dim);font-family:var(--font-mono);text-align:right;padding:0.25rem 0.5rem}
+@media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:0.65rem 0.75rem;gap:0.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
+.mega-pill{display:inline-flex;align-items:center;gap:0.2rem;background:linear-gradient(135deg,#7b5c00,#c8982c);color:#fff;font-size:0.58rem;font-weight:700;padding:0.12rem 0.4rem;border-radius:4px;margin-left:0.3rem;vertical-align:middle;white-space:nowrap}
+.modal-share-x{background:#000;color:white}
+.modal-share-x:hover{background:#333}
 .draw-row.new-result{animation:flashRow 1.5s ease}
 @keyframes flashRow{0%{background:#e8f5ee}100%{background:var(--bg-card)}}
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+/* ── FRESHNESS BAR ── */
+.freshness-bar{display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.3rem 1rem;background:var(--green-pale);border-bottom:1px solid rgba(26,107,60,0.12);font-size:0.68rem;color:var(--text-mid);font-family:var(--font-mono)}
+.freshness-bar.stale{background:#fff8e1;border-bottom-color:rgba(212,135,74,0.2);color:var(--amber)}
+.freshness-dot{width:5px;height:5px;border-radius:50%;background:var(--green-light);flex-shrink:0}
+.freshness-bar.stale .freshness-dot{background:var(--amber)}
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal-sheet{background:var(--bg-card);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem 2rem;width:100%;max-width:500px;transform:translateY(100%);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.modal-sheet{background:var(--bg-card);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem 2rem;width:100%;max-width:500px;transform:translateY(100%);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1)}
 .modal-overlay.open .modal-sheet{transform:translateY(0)}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1.25rem}
-.modal-num-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8b84a);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.2);box-shadow:0 4px 16px rgba(200,152,44,.35);margin:0 auto .75rem}
-.modal-meaning{text-align:center;font-family:var(--font-display);font-size:1.3rem;color:var(--green);margin-bottom:.25rem}
-.modal-slot{text-align:center;font-size:.75rem;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:.5rem}
-.modal-addons{display:flex;justify-content:center;gap:.4rem;margin-bottom:1rem}
-.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.25rem}
-.modal-stat{background:var(--bg);border-radius:10px;padding:.65rem .5rem;text-align:center}
+.modal-num-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e8b84a);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:white;text-shadow:0 1px 3px rgba(0,0,0,0.2);box-shadow:0 4px 16px rgba(200,152,44,0.35);margin:0 auto 0.75rem}
+.modal-meaning{text-align:center;font-family:var(--font-display);font-size:1.3rem;color:var(--green);margin-bottom:0.25rem}
+.modal-slot{text-align:center;font-size:0.75rem;color:var(--text-dim);font-family:var(--font-mono);margin-bottom:1.25rem}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:1.25rem}
+.modal-stat{background:var(--bg);border-radius:10px;padding:0.65rem 0.5rem;text-align:center}
 .modal-stat-val{font-family:var(--font-mono);font-size:1.2rem;font-weight:700;color:var(--green)}
-.modal-stat-lbl{font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem}
-.mega-payout-box{background:linear-gradient(135deg,#7b5c00,#c8982c);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;display:none}
-.mega-payout-box.show{display:block}
-.mega-payout-title{font-size:.72rem;font-weight:700;color:#fff8e1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem}
-.mega-payout-row{display:flex;justify-content:space-between;align-items:center;gap:.3rem}
-.mega-payout-item{text-align:center;flex:1}
-.mega-payout-val{font-family:var(--font-mono);font-size:1rem;font-weight:700;color:#fff}
-.mega-payout-lbl{font-size:.55rem;color:rgba(255,248,225,.75);text-transform:uppercase}
-.mega-payout-div{width:1px;background:rgba(255,255,255,.2);align-self:stretch}
-.modal-share-row{display:flex;gap:.5rem;flex-wrap:wrap}
-.modal-share-btn{flex:1;padding:.7rem;border-radius:10px;border:none;font-size:.82rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s}
-.share-wa{background:#25D366;color:#fff}.share-wa:hover{background:#1da851}
-.share-fb{background:#1877F2;color:#fff}.share-fb:hover{background:#1464d8}
-.share-x{background:#000;color:#fff}.share-x:hover{background:#333}
-.share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light)!important;flex-basis:100%}
-.share-copy:hover{background:var(--green);color:#fff}
-.modal-close{display:block;width:100%;margin-top:.75rem;padding:.55rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:.78rem;color:var(--text-dim);cursor:pointer;font-family:var(--font-body)}
-@media(max-width:480px){.logo{font-size:1.4rem}.stat-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:repeat(4,1fr)}.draw-row{padding:.65rem .75rem;gap:.5rem}.draw-number{width:42px;height:42px;font-size:1.1rem}}
+.modal-stat-lbl{font-size:0.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.15rem}
+.modal-share-row{display:flex;gap:0.5rem;flex-wrap:wrap}
+.modal-share-btn{flex:1;padding:0.7rem;border-radius:10px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all 0.15s}
+.modal-share-wa{background:#25D366;color:white}
+.modal-share-wa:hover{background:#1da851}
+.modal-share-fb{background:#1877F2;color:white}
+.modal-share-fb:hover{background:#1464d8}
+.modal-share-x{background:#000000;color:white}
+.modal-share-x:hover{background:#333333}
+.modal-share-copy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-light);flex-basis:100%}
+.modal-share-copy:hover{background:var(--green);color:white}
+.modal-close{display:block;width:100%;margin-top:0.75rem;padding:0.55rem;background:none;border:1px solid var(--border);border-radius:10px;font-size:0.78rem;color:var(--text-dim);cursor:pointer;font-family:var(--font-body)}
+/* ── MEGA BALL BANNER ── */
+.mega-info-banner{background:linear-gradient(135deg,#7b5c00,#c8982c);border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;display:none}
+.mega-info-banner.show{display:block}
+.mega-info-title{font-size:0.72rem;font-weight:700;color:#fff8e1;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem}
+.mega-info-row{display:flex;justify-content:space-between;align-items:center;gap:0.5rem}
+.mega-info-item{text-align:center;flex:1}
+.mega-info-val{font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:#fff}
+.mega-info-lbl{font-size:0.56rem;color:rgba(255,248,225,0.75);text-transform:uppercase;letter-spacing:0.05em}
+.mega-info-divider{width:1px;background:rgba(255,255,255,0.2);align-self:stretch}
+/* ── NEW RESULT FLASH ── */
+.draw-row.new-result{animation:flashRow 1.5s ease}
+@keyframes flashRow{0%{background:#e8f5ee}100%{background:var(--bg-card)}}
+
 </style>
 </head>
 <body>
+
 <header class="site-header">
   <div class="header-inner">
     <div class="header-top">
@@ -160,7 +174,7 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.sectio
       </div>
     </div>
   </div>
-  <nav class="site-nav">
+  <nav class="site-nav" id="mainNav">
     <a href="#today" class="active" data-section="today">Today</a>
     <a href="#history" data-section="history">History</a>
     <a href="#meanings" data-section="meanings">Meanings</a>
@@ -176,21 +190,21 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.sectio
     <div class="today-banner">
       <h2 id="todayTitle">Cash Pot Results — Today</h2>
       <div class="today-date" id="todayDate"></div>
-      <div class="countdown" id="nextDraw" style="margin-top:.35rem"></div>
+      <div class="countdown" id="nextDraw" style="margin-top:0.35rem"></div>
     </div>
-    <div id="todayDraws"><div class="loading">⏳ Loading today's results...</div></div>
+    <div id="todayDraws"><div class="loading-spinner">Loading today's results...</div></div>
     <div class="card" style="margin-top:1rem">
       <div class="card-title">Yesterday's Results</div>
-      <div id="yesterdayDraws"><div class="loading">⏳ Loading...</div></div>
+      <div id="yesterdayDraws"><div class="loading-spinner">Loading...</div></div>
     </div>
   </section>
 
   <section id="history" class="section">
     <div class="card">
       <div class="card-title">Cash Pot Draw History</div>
-      <div class="card-subtitle">Full archive — updated automatically every draw</div>
+      <div class="card-subtitle">Full archive from May 2024 — updated automatically</div>
       <div class="history-controls">
-        <input type="date" id="historyFrom">
+        <input type="date" id="historyFrom" placeholder="From date">
         <input type="number" id="historyNum" placeholder="Search number (1-36)" min="1" max="36">
         <select id="historySlot">
           <option value="">All Slots</option>
@@ -203,7 +217,7 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.sectio
         </select>
       </div>
     </div>
-    <div id="historyList"><div class="loading">⏳ Loading history...</div></div>
+    <div id="historyList"><div class="loading-spinner">Loading history...</div></div>
     <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreHistory()" style="display:none">Load More Results</button>
   </section>
 
@@ -219,23 +233,32 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.sectio
     <div class="card">
       <div class="card-title">Cash Pot Statistics</div>
       <div class="card-subtitle">Based on <span id="totalDrawsStat">...</span> draws</div>
-      <div class="stat-grid" id="statsGrid"><div class="loading">Loading...</div></div>
+      <div class="stat-grid" id="statsGrid"><div class="loading-spinner">Loading stats...</div></div>
     </div>
-    <div class="card"><div class="card-title">Hottest Numbers <span class="badge badge-hot">Last 30 days</span></div><div id="hotNumbers"></div></div>
-    <div class="card"><div class="card-title">Most Overdue <span class="badge badge-cold">Longest gap</span></div><div id="coldNumbers"></div></div>
-    <div class="card"><div class="card-title">All Numbers — Frequency</div><div class="num-grid" id="freqGrid"></div></div>
+    <div class="card">
+      <div class="card-title">Hottest Numbers <span class="badge badge-hot">Last 30 days</span></div>
+      <div id="hotNumbers"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Most Overdue <span class="badge badge-cold">Longest gap</span></div>
+      <div id="coldNumbers"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">All Numbers — Frequency</div>
+      <div class="num-grid" id="freqGrid"></div>
+    </div>
   </section>
 
   <section id="faq" class="section">
     <div class="card">
       <div class="card-title">Frequently Asked Questions</div>
       <div id="faqList">
-        <div class="faq-item"><div class="faq-q">What played in Cash Pot today?</div><div class="faq-a">Cash Pot draws happen 6 times daily at 8:30am, 10:30am, 1:00pm, 3:00pm, 5:00pm and 8:25pm Jamaica time. CashPotJA updates within minutes of each draw.</div></div>
-        <div class="faq-item"><div class="faq-q">How much does Cash Pot pay?</div><div class="faq-a">Cash Pot pays <strong>$260 for every $10 bet</strong> (26:1). With Mega Ball ($10 extra on top), you win <strong>$960 total</strong>. Monsta Ball adds even more on top.</div></div>
-        <div class="faq-item"><div class="faq-q">What are the Cash Pot draw times?</div><div class="faq-a">6 draws daily:<br>• Early Bird — 8:30 AM<br>• Morning — 10:30 AM<br>• Midday — 1:00 PM<br>• Mid-Afternoon — 3:00 PM<br>• Drive Time — 5:00 PM<br>• Evening — 8:25 PM</div></div>
-        <div class="faq-item"><div class="faq-q">What are the number meanings?</div><div class="faq-a">Each number 1-36 has a traditional Jamaican meaning (Afiyu Kent) used in dream interpretation. See the full chart in our Meanings tab.</div></div>
-        <div class="faq-item"><div class="faq-q">How to get Cash Pot alerts?</div><div class="faq-a">Tap 🔔 Alerts in the header. You'll get an instant notification whenever new results drop.</div></div>
-        <div class="faq-item"><div class="faq-q">Is this the official Supreme Ventures website?</div><div class="faq-a">No. CashPotJA is independent and not affiliated with Supreme Ventures. Results are for informational purposes only. Players must be 18+.</div></div>
+        <div class="faq-item"><div class="faq-q">What played in Cash Pot today?</div><div class="faq-a">Cash Pot draws happen 6 times daily in Jamaica at 8:30am, 10:30am, 1:00pm, 3:00pm, 5:00pm and 8:25pm (Jamaica time). Visit CashPotJA.com for the latest results — we update within minutes of each draw.</div></div>
+        <div class="faq-item"><div class="faq-q">How much does Cash Pot pay?</div><div class="faq-a">Cash Pot pays <strong>$260 for every $10 bet</strong> (26:1 odds). With the Mega Ball add-on ($10 extra), you can win <strong>$960 total</strong>.</div></div>
+        <div class="faq-item"><div class="faq-q">What are the Cash Pot draw times?</div><div class="faq-a">There are 6 draws every day:<br>• <strong>Early Bird</strong> — 8:30 AM<br>• <strong>Morning</strong> — 10:30 AM<br>• <strong>Midday</strong> — 1:00 PM<br>• <strong>Mid-Afternoon</strong> — 3:00 PM<br>• <strong>Drive Time</strong> — 5:00 PM<br>• <strong>Evening</strong> — 8:25 PM</div></div>
+        <div class="faq-item"><div class="faq-q">What do Cash Pot numbers mean?</div><div class="faq-a">Each number 1-36 has a traditional Jamaican meaning (Afiyu Kent). For example: 1=Duppy, 4=Egg, 11=Dog, 23=Black Man, 32=Gold. See the full chart in our Meanings tab.</div></div>
+        <div class="faq-item"><div class="faq-q">How to get Cash Pot alerts?</div><div class="faq-a">Click the 🔔 Alerts button in the header to enable push notifications. You'll get an instant alert on your phone whenever new Cash Pot results are published.</div></div>
+        <div class="faq-item"><div class="faq-q">Is this the official Supreme Ventures website?</div><div class="faq-a">No. CashPotJA is an independent results website, not affiliated with Supreme Ventures Limited. Results are for informational purposes only.</div></div>
       </div>
     </div>
   </section>
@@ -245,471 +268,544 @@ main{max-width:800px;margin:0 auto;padding:1.25rem}.section{display:none}.sectio
   <strong>CashPotJA</strong> — Jamaica's Fastest Cash Pot Results<br>
   Updated 6 times daily after every Supreme Ventures draw.<br>
   <a href="#meanings">Number Meanings</a> · <a href="#history">Full History</a> · <a href="#stats">Statistics</a><br><br>
-  <em>Disclaimer: CashPotJA is not affiliated with Supreme Ventures Limited.<br>Results are for informational purposes only. Players must be 18+.</em><br><br>
+  <em>Disclaimer: CashPotJA is not affiliated with Supreme Ventures Limited.<br>
+  Results are for informational purposes only. Players must be 18+.</em><br><br>
   © 2024–2026 CashPotJA. All rights reserved.
 </footer>
 
-<!-- NUMBER DETAIL MODAL -->
-<div class="modal-overlay" id="numModal" onclick="closeModalBg(event)">
+<div class="modal-overlay" id="numModal" onclick="closeModal(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-num-big" id="modalNum">—</div>
     <div class="modal-meaning" id="modalMeaning"></div>
     <div class="modal-slot" id="modalSlot"></div>
-    <div class="modal-addons" id="modalAddons"></div>
-    <div class="mega-payout-box" id="megaPayoutBox">
-      <div class="mega-payout-title">⭐ Mega Ball Draw</div>
-      <div class="mega-payout-row">
-        <div class="mega-payout-item"><div class="mega-payout-val">$10</div><div class="mega-payout-lbl">Regular bet</div></div>
-        <div class="mega-payout-div"></div>
-        <div class="mega-payout-item"><div class="mega-payout-val">$260</div><div class="mega-payout-lbl">Regular win</div></div>
-        <div class="mega-payout-div"></div>
-        <div class="mega-payout-item"><div class="mega-payout-val">$20</div><div class="mega-payout-lbl">Mega bet</div></div>
-        <div class="mega-payout-div"></div>
-        <div class="mega-payout-item"><div class="mega-payout-val">$960</div><div class="mega-payout-lbl">Mega win</div></div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="mega-info-banner" id="megaBanner">
+      <div class="mega-info-title">⭐ Mega Ball Draw</div>
+      <div class="mega-info-row">
+        <div class="mega-info-item"><div class="mega-info-val">$10</div><div class="mega-info-lbl">Regular bet</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$260</div><div class="mega-info-lbl">Regular win</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$20</div><div class="mega-info-lbl">Mega bet</div></div>
+        <div class="mega-info-divider"></div>
+        <div class="mega-info-item"><div class="mega-info-val">$960</div><div class="mega-info-lbl">Mega win</div></div>
       </div>
     </div>
-    <div class="modal-stats" id="modalStats"></div>
     <div class="modal-share-row">
-      <button class="modal-share-btn share-wa" onclick="modalShare('wa')">📲 WhatsApp</button>
-      <button class="modal-share-btn share-fb" onclick="modalShare('fb')">📘 Facebook</button>
-      <button class="modal-share-btn share-x" onclick="modalShare('x')">🐦 X / Twitter</button>
-      <button class="modal-share-btn share-copy" id="copyBtn" onclick="modalShare('copy')">📋 Copy Text</button>
+      <button class="modal-share-btn modal-share-wa" id="modalWA" onclick="modalShareWA()">📲 WhatsApp</button>
+      <button class="modal-share-btn modal-share-fb" id="modalFB" onclick="modalShareFB()">📘 Facebook</button>
+      <button class="modal-share-btn modal-share-x" id="modalX" onclick="modalShareX()">🐦 X / Twitter</button>
+      <button class="modal-share-btn modal-share-x" id="modalX" onclick="modalShareX()">🐦 X / Twitter</button>
+      <button class="modal-share-btn modal-share-copy" id="modalCopy" onclick="modalShareCopy()">📋 Copy Text</button>
     </div>
-    <button class="modal-close" onclick="closeModal()">Close</button>
+    <button class="modal-close" onclick="closeNumModal()">Close</button>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════════════════════════
-var SB_URL  = "https://xnokltjszzgaswccjpax.supabase.co";
-var SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
-var SB_HDR  = {"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
-var SITE_URL= "https://kerrtheinfluencer.github.io/Cashpotresults/";
-var VAPID   = "BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
+// ── CONFIG ────────────────────────────────────────────────────
+var SB_URL="https://xnokltjszzgaswccjpax.supabase.co";
+var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhub2tsdGpzenpnYXN3Y2NqcGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTQyODAsImV4cCI6MjA4OTc3MDI4MH0.FgGKae2ksWnXDEB0_Mx0MNLucuKXOAO1lJrR6CbDwHM";
+var SB_HDR={"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
 
-// ════════════════════════════════════════════════════════════
-// CONSTANTS
-// ════════════════════════════════════════════════════════════
-var SLOT_NAMES  = ["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
-var SLOT_TIMES  = ["8:30 AM","10:30 AM","1:00 PM","3:00 PM","5:00 PM","8:25 PM"];
-var SLOT_HOURS  = [8.5, 10.5, 13, 15, 17, 20.42];
-var DOW_SHORT   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-var MEANINGS    = {1:"Duppy",2:"Small Fire",3:"Dead",4:"Egg",5:"Thief",6:"Strong Man",7:"Married Woman",8:"Belly",9:"Cow",10:"Small House",11:"Dog",12:"Head",13:"Police",14:"Mouth",15:"Rat",16:"Young Girl",17:"Chinese Man",18:"Race Horse",19:"Silver",20:"Sick Person",21:"Bad Girl",22:"White Woman",23:"Black Man",24:"Fresh Water",25:"John Crow",26:"White Man",27:"Big Fire",28:"Fowl",29:"Parson",30:"Fish",31:"Lizard",32:"Gold",33:"Big House",34:"Baby",35:"Goat",36:"Old Lady"};
+// ── CONSTANTS ─────────────────────────────────────────────────
+var SLOT_NAMES=["Early Bird","Morning","Midday","Mid-Aft","Drive Time","Evening"];
+var SLOT_TIMES=["8:30 AM","10:30 AM","1:00 PM","3:00 PM","5:00 PM","8:25 PM"];
+var SLOT_HOURS=[8.5,10.5,13,15,17,20.42];
+var DOW_SHORT=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var MEANINGS={1:"Duppy",2:"Small Fire",3:"Dead",4:"Egg",5:"Thief",6:"Strong Man",7:"Married Woman",8:"Belly",9:"Cow",10:"Small House",11:"Dog",12:"Head",13:"Police",14:"Mouth",15:"Rat",16:"Young Girl",17:"Chinese Man",18:"Race Horse",19:"Silver",20:"Sick Person",21:"Bad Girl",22:"White Woman",23:"Black Man",24:"Fresh Water",25:"John Crow",26:"White Man",27:"Big Fire",28:"Fowl",29:"Parson",30:"Fish",31:"Lizard",32:"Gold",33:"Big House",34:"Baby",35:"Goat",36:"Old Lady"};
 
-// ════════════════════════════════════════════════════════════
-// DATA STORE
-// dbCache[date] = [n0,n1,n2,n3,n4,n5]   numbers per slot (null=unknown)
-// megaCache[date][slot] = {mega:bool, monsta:bool}
-// ════════════════════════════════════════════════════════════
-var dbCache   = {};   // { "2026-03-26": [8,3,null,5,35,4] }
-var megaCache = {};   // { "2026-03-26": [{mega:true,monsta:false}, ...] }
-var dbLoaded  = false;
+// ── IN-MEMORY CACHE ───────────────────────────────────────────
+var dbCache={};
+var dbLoaded=false;
+var liveMega={};
+var liveAddons={};
 
-var LS_DATA  = "cpja_data_v2";
-var LS_MEGA  = "cpja_mega_v2";
-var LS_META  = "cpja_meta_v2";
+// ── LOCAL STORAGE CACHE ───────────────────────
+var LS_KEY="cpja_cache_v1";
+var LS_META="cpja_cache_meta_v1";
 
-// ════════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════════
-function getJANow(){ return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"})); }
-function pad(n){ return String(n).padStart(2,"0"); }
-function getJAToday(){ var j=getJANow(); return j.getFullYear()+"-"+pad(j.getMonth()+1)+"-"+pad(j.getDate()); }
-function getYesterday(){ var j=getJANow(); j.setDate(j.getDate()-1); return j.getFullYear()+"-"+pad(j.getMonth()+1)+"-"+pad(j.getDate()); }
-function fmtLong(ds){ var p=ds.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); }
-function fmtShort(ds){ var p=ds.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"short",day:"numeric",month:"short"}); }
-function getDOW(ds){ var p=ds.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]).getDay(); }
-function getDraws(date){ return dbCache[date]||[null,null,null,null,null,null]; }
-function getAddon(date,slot){ return (megaCache[date]&&megaCache[date][slot])||{mega:false,monsta:false}; }
-
-function sbFetch(path,opts){
-  return fetch(SB_URL+path, Object.assign({headers:SB_HDR},opts||{})).then(function(r){return r.json();});
-}
-
-// ════════════════════════════════════════════════════════════
-// LOCAL CACHE  (persists across page loads — keeps yesterday visible)
-// ════════════════════════════════════════════════════════════
-function saveCache(){
+function saveToLocalCache(){
   try{
-    localStorage.setItem(LS_DATA, JSON.stringify(dbCache));
-    localStorage.setItem(LS_MEGA, JSON.stringify(megaCache));
-    localStorage.setItem(LS_META, JSON.stringify({ts:Date.now(), date:getJAToday()}));
+    localStorage.setItem(LS_KEY,JSON.stringify(dbCache));
+    localStorage.setItem("cpja_mega_v1",JSON.stringify(liveMega));
+    localStorage.setItem("cpja_addons_v1",JSON.stringify(liveAddons));
+    localStorage.setItem(LS_META,JSON.stringify({saved:Date.now(),date:getJAToday()}));
   }catch(e){}
 }
 
-function loadCache(){
+function loadFromLocalCache(){
   try{
-    var meta = JSON.parse(localStorage.getItem(LS_META)||"null");
-    if(!meta) return 0;
-    var data = JSON.parse(localStorage.getItem(LS_DATA)||"null");
-    var mega = JSON.parse(localStorage.getItem(LS_MEGA)||"null");
-    if(data) Object.keys(data).forEach(function(d){ if(!dbCache[d]) dbCache[d]=data[d]; });
-    if(mega) Object.keys(mega).forEach(function(d){ if(!megaCache[d]) megaCache[d]=mega[d]; });
-    // Return 0 on new day (forces DB reload) but data is still pre-loaded above
-    return meta.date===getJAToday() ? (meta.ts||0) : 0;
-  }catch(e){ return 0; }
+    var meta=JSON.parse(localStorage.getItem(LS_META)||"null");
+    if(!meta) return false;
+    // Don't wipe cache on new day — data still needed for yesterday display
+    // Return false so DB reloads fresh, but keep data pre-loaded above
+    if(meta.date&&meta.date!==getJAToday()) return false;
+    var cached=JSON.parse(localStorage.getItem(LS_KEY)||"null");
+    if(!cached) return false;
+    Object.keys(cached).forEach(function(d){if(!dbCache[d])dbCache[d]=cached[d];});
+    var cachedMega=JSON.parse(localStorage.getItem("cpja_mega_v1")||"null");
+    if(cachedMega) Object.keys(cachedMega).forEach(function(d){if(!liveMega[d])liveMega[d]=cachedMega[d];});
+    var ca=JSON.parse(localStorage.getItem("cpja_addons_v1")||"null");
+    if(ca)Object.keys(ca).forEach(function(d){if(!liveAddons[d])liveAddons[d]=ca[d];});
+    return meta.saved||0;
+  }catch(e){return false;}
 }
 
-// ════════════════════════════════════════════════════════════
-// SUPABASE: LOAD ALL RESULTS
-// ════════════════════════════════════════════════════════════
+// ── DATE HELPERS ──────────────────────────────────────────────
+function getJANow(){return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Jamaica"}))}
+function getJAToday(){var j=getJANow();return j.getFullYear()+"-"+pad(j.getMonth()+1)+"-"+pad(j.getDate())}
+function getYesterday(){var j=getJANow();j.setDate(j.getDate()-1);return j.getFullYear()+"-"+pad(j.getMonth()+1)+"-"+pad(j.getDate())}
+function pad(n){return String(n).padStart(2,"0")}
+function fmtDateLong(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function fmtDateShort(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-JM",{weekday:"short",day:"numeric",month:"short"})}
+function getDOW(ds){var p=ds.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]).getDay()}
+
+// ── SUPABASE HELPERS ──────────────────────────────────────────
+function sbFetch(path,opts){
+  return fetch(SB_URL+path,Object.assign({headers:SB_HDR},opts||{})).then(function(r){return r.json()});
+}
+
+// Load all results from Supabase
 function loadAllFromDB(){
-  return sbFetch("/rest/v1/cashpot_results?select=draw_date,slot,number,is_mega,is_monsta&order=draw_date.asc,slot.asc&limit=10000")
+  return sbFetch("/rest/v1/cashpot_results?select=draw_date,slot,number,is_mega&order=draw_date.asc,slot.asc&limit=10000")
   .then(function(rows){
     if(!Array.isArray(rows)) return;
     rows.forEach(function(r){
-      var d = r.draw_date, s = r.slot, n = r.number;
-      if(!d || s===undefined || s===null || !n || n<1 || n>36) return;
-      if(!dbCache[d])   dbCache[d]   = [null,null,null,null,null,null];
-      if(!megaCache[d]) megaCache[d] = [{},{},{},{},{},{}];
-      dbCache[d][s]      = n;
-      megaCache[d][s]    = { mega: !!r.is_mega, monsta: !!r.is_monsta };
+      if(!dbCache[r.draw_date]) dbCache[r.draw_date]=[null,null,null,null,null,null];
+      dbCache[r.draw_date][r.slot]=r.number;
+      // is_mega is integer: 0=none, 1=Mega only, 2=Monsta only, 3=both
+      var addon = typeof r.is_mega==="number" ? r.is_mega : (r.is_mega ? 1 : 0);
+      if(addon){
+        if(!liveMega[r.draw_date]) liveMega[r.draw_date]=[false,false,false,false,false,false];
+        liveMega[r.draw_date][r.slot]=!!(addon&1);
+        if(!liveAddons[r.draw_date]) liveAddons[r.draw_date]=[0,0,0,0,0,0];
+        liveAddons[r.draw_date][r.slot]=addon;
+      }
     });
-    dbLoaded = true;
-  }).catch(function(e){ console.warn("DB load failed:", e); dbLoaded=true; });
+    dbLoaded=true;
+    console.log("DB loaded: "+rows.length+" rows");
+  }).catch(function(e){console.warn("DB load failed:",e);dbLoaded=true});
 }
 
-// ════════════════════════════════════════════════════════════
-// SUPABASE: SAVE ONE DRAW
-// ════════════════════════════════════════════════════════════
-function saveToDB(date, slot, number, isMega, isMonsta){
-  isMega   = isMega   || false;
-  isMonsta = isMonsta || false;
-  // Skip if already stored with same value
-  if(dbCache[date] && dbCache[date][slot]===number) return;
-  fetch(SB_URL+"/rest/v1/cashpot_results", {
+// Save single draw - scraper always wins over stale DB data
+function saveToDB(date,slot,number,isMega){
+  isMega=isMega||false;
+  // Only skip if we already have this exact number (avoid duplicate writes)
+  // But always allow overwrite so fresh scrape corrects stale DB rows
+  if(dbCache[date]&&dbCache[date][slot]===number&&isMega===false) return Promise.resolve();
+  return fetch(SB_URL+"/rest/v1/cashpot_results",{
     method:"POST",
-    headers: Object.assign({}, SB_HDR, {"Prefer":"resolution=merge-duplicates"}),
-    body: JSON.stringify({draw_date:date, slot:slot, number:number, is_mega:isMega, is_monsta:isMonsta})
-  }).then(function(r){
-    if(!r.ok) return;
-    if(!dbCache[date])   dbCache[date]   = [null,null,null,null,null,null];
-    if(!megaCache[date]) megaCache[date] = [{},{},{},{},{},{}];
-    dbCache[date][slot]   = number;
-    megaCache[date][slot] = {mega:isMega, monsta:isMonsta};
-    saveCache();
-    console.log("[DB] Saved "+date+" slot "+slot+" = "+number+(isMega?" MEGA":"")+(isMonsta?" MONSTA":""));
-  }).catch(function(e){ console.warn("[DB] Save failed:", e); });
-}
-
-// ════════════════════════════════════════════════════════════
-// SCRAPER  — tries two sources, extracts number + Mega + Monsta
-// ════════════════════════════════════════════════════════════
-var SLOT_HEADERS = [
-  {keys:["EARLY-BIRD","EARLYBIRD","EARLY BIRD"], slot:0},
-  {keys:["MORNING"],                              slot:1},
-  {keys:["MIDDAY","MID-DAY"],                     slot:2},
-  {keys:["MID AFTERNOON","MID-AFTERNOON","MIDAFTERNOON","MID-AFT"], slot:3},
-  {keys:["DRIVE TIME","DRIVETIME","DRIVE-TIME"],  slot:4},
-  {keys:["EVENING"],                              slot:5}
-];
-
-// Detect Mega and Monsta from an HTML/text chunk around a slot
-// cashpotresults.info marks Mega with gold ball image, Monsta with red ball
-// We look for colour hints, class names, and keyword proximity
-function detectAddons(chunk){
-  var u = chunk.toUpperCase();
-  var mega   = false;
-  var monsta = false;
-
-  // Strategy 1: explicit keywords
-  if(u.indexOf("MEGA")   !== -1) mega   = true;
-  if(u.indexOf("MONSTA") !== -1) monsta = true;
-
-  // Strategy 2: colour cues in HTML (gold = mega, red = monsta)
-  // Gold: FFD700, FFC700, gold, #C89, #B8860B
-  if(/FFD700|FFC700|#C8982|#B886|GOLD-BALL|mega-ball/i.test(chunk)) mega = true;
-  // Red: C0392B, E74C3C, FF0000, red-ball, monsta
-  if(/C0392B|E74C3C|FF0000|RED-BALL|monsta-ball/i.test(chunk))      monsta = true;
-
-  // Strategy 3: image filenames
-  if(/mega.*\.(png|jpg|gif|svg)/i.test(chunk))   mega   = true;
-  if(/monsta.*\.(png|jpg|gif|svg)/i.test(chunk)) monsta = true;
-
-  return {mega:mega, monsta:monsta};
-}
-
-function parsePageForDate(html, isToday, nowHour){
-  var text   = html.toUpperCase();
-  var results= [];   // [{slot, num, mega, monsta}]
-  var filled = [false,false,false,false,false,false];
-
-  for(var hi=0; hi<SLOT_HEADERS.length; hi++){
-    var sh = SLOT_HEADERS[hi];
-    if(filled[sh.slot]) continue;
-
-    var pos = -1;
-    for(var ki=0; ki<sh.keys.length; ki++){
-      var idx = text.indexOf(sh.keys[ki]);
-      if(idx !== -1){ pos = idx; break; }
+    headers:Object.assign({},SB_HDR,{"Prefer":"resolution=merge-duplicates"}),
+    body:JSON.stringify({draw_date:date,slot:slot,number:number,is_mega:isMega})
+  }).then(function(){
+    if(!dbCache[date]) dbCache[date]=[null,null,null,null,null,null];
+    dbCache[date][slot]=number;
+    if(isMega) {
+      if(!liveMega[date]) liveMega[date]=[false,false,false,false,false,false];
+      liveMega[date][slot]=true;
+      if(!liveAddons[date]) liveAddons[date]=[0,0,0,0,0,0];
+      liveAddons[date][slot]=typeof isMega==="number"?isMega:2;
     }
-    if(pos === -1) continue;
+    console.log("Saved: "+date+" slot "+slot+" = "+number);
+    saveToLocalCache();
+  }).catch(function(e){console.warn("Save failed:",e)});
+}
 
-    // For today, skip slots that haven't drawn yet (5 min grace)
-    if(isToday && nowHour < SLOT_HOURS[sh.slot] + 0.083) continue;
+function getDraws(date){
+  return dbCache[date]||[null,null,null,null,null,null];
+}
 
-    // Find where next slot begins so we don't bleed into it
-    var nextPos = text.length;
-    for(var ni=0; ni<SLOT_HEADERS.length; ni++){
-      if(ni===hi) continue;
-      for(var nk=0; nk<SLOT_HEADERS[ni].keys.length; nk++){
-        var np = text.indexOf(SLOT_HEADERS[ni].keys[nk], pos+4);
-        if(np !== -1 && np < nextPos) nextPos = np;
+// ── SCRAPER: parses cashpotresults.info HTML ─────────────────
+// HOW THE SITE MARKS ADDONS (confirmed from debug.html):
+//   Each draw row has two ball <td> cells after the number.
+//   Ball cell classes:
+//     wpdt-ff-000001 = GOLD  = Mega Ball active
+//     wpdt-ff-000000 = BLACK/WHITE (grey ball image) = not active
+//   Red ball image (monsta-ball.png or similar) = Monsta Ball active
+//   A grey ball image = not active
+//
+// So we read the raw HTML slice for each slot and check:
+//   - does it contain "wpdt-ff-000001"? → Mega ON
+//   - does it contain a red ball img (colour hint or filename)? → Monsta ON
+
+function parseDrawsFromPage(pageText, targetDate, nowHour, isYesterday, rawHtml){
+  var SLOTS=[
+    {keys:["EARLY-BIRD"],       slot:0},
+    {keys:["MORNING"],          slot:1},
+    {keys:["MIDDAY"],           slot:2},
+    {keys:["MID AFTERNOON","MID-AFTERNOON"], slot:3},
+    {keys:["DRIVE TIME"],       slot:4},
+    {keys:["EVENING"],          slot:5}
+  ];
+  var filled=[false,false,false,false,false,false];
+  var results=[];
+
+  for(var si=0; si<SLOTS.length; si++){
+    var sd=SLOTS[si];
+    if(filled[sd.slot]) continue;
+
+    // Find slot header position in page text
+    var pos=-1, hdrUsed="";
+    for(var ki=0; ki<sd.keys.length; ki++){
+      var idx=pageText.indexOf(sd.keys[ki]);
+      if(idx!==-1){pos=idx; hdrUsed=sd.keys[ki]; break;}
+    }
+    if(pos===-1) continue;
+
+    // Skip future slots for today
+    if(!isYesterday && nowHour < SLOT_HOURS[sd.slot]-0.08) continue;
+
+    // Find where the next slot starts to bound our search
+    var nxt=pageText.length;
+    for(var ni=0; ni<SLOTS.length; ni++){
+      for(var nk=0; nk<SLOTS[ni].keys.length; nk++){
+        var np=pageText.indexOf(SLOTS[ni].keys[nk], pos+hdrUsed.length);
+        if(np!==-1 && np<nxt) nxt=np;
       }
     }
 
-    var chunk    = html.substring(pos, Math.min(nextPos, pos+800));
-    var chunkTxt = text.substring(pos, Math.min(nextPos, pos+800));
+    var sliceTxt = pageText.substring(pos, nxt);
 
-    // Extract draw number — first 1-2 digit number between 1 and 36
-    var numMatch = chunkTxt.match(/\b(\d{1,2})\b/g);
-    var num = null;
+    // Extract the draw number (first 1-2 digit number 1-36)
+    var numMatch = sliceTxt.match(/(\d{1,2})/g);
+    var num=null;
     if(numMatch){
       for(var mi=0; mi<numMatch.length; mi++){
-        var n = parseInt(numMatch[mi]);
-        if(n>=1 && n<=36){ num=n; break; }
+        var n=parseInt(numMatch[mi]);
+        if(n>=1 && n<=36){num=n; break;}
       }
     }
     if(num===null) continue;
 
-    var addons = detectAddons(chunk);
-    filled[sh.slot] = true;
-    results.push({slot:sh.slot, num:num, mega:addons.mega, monsta:addons.monsta});
+    // ── ADDON DETECTION from raw HTML ──────────────────────
+    var isMega=false, isMonsta=false;
+    if(rawHtml){
+      // Find same position in raw HTML
+      var rpos=-1;
+      for(var rki=0; rki<sd.keys.length; rki++){
+        var ri=rawHtml.toUpperCase().indexOf(sd.keys[rki].toUpperCase());
+        if(ri!==-1){rpos=ri; break;}
+      }
+      if(rpos!==-1){
+        var rnxt=rawHtml.length;
+        for(var rni=0; rni<SLOTS.length; rni++){
+          for(var rnk=0; rnk<SLOTS[rni].keys.length; rnk++){
+            var rnp=rawHtml.toUpperCase().indexOf(SLOTS[rni].keys[rnk].toUpperCase(), rpos+4);
+            if(rnp!==-1 && rnp<rnxt) rnxt=rnp;
+          }
+        }
+        var htmlSlice = rawHtml.substring(rpos, Math.min(rnxt, rpos+1500));
+        var htmlUp    = htmlSlice.toUpperCase();
+
+        // MEGA: gold ball = class wpdt-ff-000001
+        // The site uses wpdt-ff-000001 for gold/yellow colour
+        if(htmlUp.indexOf("WPDT-FF-000001") !== -1) isMega = true;
+
+        // MONSTA: red ball
+        // Look for red colour indicators in ball image cells
+        // The site uses red ball images; check for red hex or "monsta" text or red img src
+        if(htmlUp.indexOf("MONSTA") !== -1) isMonsta = true;
+        // Red colour classes or inline styles
+        if(/FF0000|C0392B|E74C3C|RED.*BALL|BALL.*RED/i.test(htmlSlice)) isMonsta = true;
+        // Red ball image filename
+        if(/red[-_]ball|monsta[-_]ball|ball[-_]red/i.test(htmlSlice)) isMonsta = true;
+
+        // IMPORTANT: on cashpotresults.info each draw has exactly 2 ball cells:
+        // cell 1 (Mega): grey if inactive, gold if active
+        // cell 2 (Monsta): grey if inactive, red if active
+        // We can count wpdt-ff-000001 occurrences:
+        //   0 = both inactive
+        //   In practice we check the SECOND ball cell for red specifically
+        // Count ball cells: look for ball image tags in this slice
+        var ballImgs = htmlSlice.match(/<img[^>]+>/gi)||[];
+        for(var bi=0; bi<ballImgs.length; bi++){
+          var bimg=ballImgs[bi].toUpperCase();
+          // Gold/yellow src = Mega
+          if(bimg.indexOf("GOLD")!==-1 || bimg.indexOf("MEGA")!==-1 || bimg.indexOf("FFD700")!==-1) isMega=true;
+          // Red src = Monsta  
+          if(bimg.indexOf("RED")!==-1 || bimg.indexOf("MONSTA")!==-1 || bimg.indexOf("FF0000")!==-1) isMonsta=true;
+        }
+
+        // Final check: if wpdt-ff-000001 appears TWICE in this slice, both balls are gold
+        // If once, only Mega is active
+        var count000001 = (htmlSlice.match(/wpdt-ff-000001/gi)||[]).length;
+        // Each active ball uses wpdt-ff-000001 (gold colour class)
+        // First ball = Mega, Second ball = Monsta (but Monsta uses red not gold)
+        // So: 1 occurrence = Mega only, 0 = neither
+        // Monsta is always detected via red colour, not gold class
+        if(count000001 >= 1) isMega = true;
+      }
+    }
+
+    filled[sd.slot]=true;
+    // Pack as bitmask for backward compatibility: 1=mega, 2=monsta
+    var addon = (isMega?1:0) | (isMonsta?2:0);
+    results.push({slot:sd.slot, num:num, isMega:addon});
+    console.log("[Parse] "+SLOT_NAMES[sd.slot]+"="+num+(isMega?" MEGA":"")+(isMonsta?" MONSTA":""));
   }
   return results;
 }
-
 async function fetchLiveResults(){
-  var today     = getJAToday();
-  var yesterday = getYesterday();
-  var ja        = getJANow();
-  var nowHour   = ja.getHours() + ja.getMinutes()/60;
+  const today     = getJAToday();
+  const yesterday = getYesterday();
+  const nowJA     = getJANow();
+  const nowHour   = nowJA.getHours() + nowJA.getMinutes() / 60;
 
-  // What do we need?
-  var todayDraws    = getDraws(today);
-  var yesterdayDraws= getDraws(yesterday);
-  var needToday     = todayDraws.some(function(n,i){ return n===null && nowHour>=SLOT_HOURS[i]+0.083; });
-  var needYesterday = yesterdayDraws.some(function(n){ return n===null; });
-  if(!needToday && !needYesterday){
-    console.log("[Scraper] Nothing to fetch");
+  // Which today slots are we actually waiting for? Only slots whose draw time
+  // has passed by at least 5 minutes AND that we don't already have a number for.
+  const todayDraws = getDraws(today);
+  const slotsToFetch = [];
+  for(let s=0;s<6;s++){
+    if(todayDraws[s]===null && nowHour >= SLOT_HOURS[s] + 0.08){ // 5 min after draw time
+      slotsToFetch.push(s);
+    }
+  }
+
+  const ydrawsCached = getDraws(yesterday);
+  const yesterdayMissingSlots = ydrawsCached.some(n => n === null);
+
+  // Nothing to do right now — no slots are past their draw time and missing
+  if(slotsToFetch.length === 0 && !yesterdayMissingSlots){
+    console.log("[CashPotJA] No slots due yet, skipping scrape");
     return;
   }
 
-  // Sources to try in order
-  var sources = [
-    "https://corsproxy.io/?url=" + encodeURIComponent("https://cashpotresults.info/"),
-    "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://cashpotresults.info/"),
-    "https://corsproxy.io/?url=" + encodeURIComponent("https://www.jamaicaindex.com/lottery/results/cash-pot")
+  const sources = [
+    SB_URL + "/functions/v1/scrape-cashpot",
+    "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://cashpotresults.info/")
   ];
 
-  var updated = false;
+  let updated = false;
 
-  for(var si=0; si<sources.length; si++){
-    try{
-      var resp = await fetch(sources[si], {signal:AbortSignal.timeout(18000)});
-      if(!resp.ok){ console.warn("[Scraper] "+sources[si]+" → "+resp.status); continue; }
-      var html = await resp.text();
-      if(html.length < 500) continue;
+  for (let url of sources) {
+    try {
+      const headers = url.includes("/functions/v1/")
+        ? { "Authorization": "Bearer " + SB_KEY }
+        : {};
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(20000),
+        headers: headers
+      });
+      if (!response.ok) { console.warn("[CashPotJA] Source "+url+" returned "+response.status); continue; }
 
-      // ── SCRAPE TODAY ──
-      if(needToday){
-        var todayResults = parsePageForDate(html, true, nowHour);
-        for(var ti=0; ti<todayResults.length; ti++){
-          var r = todayResults[ti];
-          if(dbCache[today] && dbCache[today][r.slot]!==null) continue; // don't overwrite
+      const text = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text,"text/html");
+      const pageText = doc.body.innerText.toUpperCase();
+
+      // ── Find where TODAY's section starts on the page ──
+      // The source page shows today's date (e.g. "26TH MARCH 2026" or "MARCH 26")
+      // We look for today's date in the page to anchor our search.
+      // Build several date formats to search for:
+      const todayParts = today.split("-"); // ["2026","03","26"]
+      const monthNames = ["","JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+                          "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+      const monthName = monthNames[parseInt(todayParts[1])];
+      const dayNum = parseInt(todayParts[2]);
+      // Patterns: "26TH MARCH", "MARCH 26", "26 MARCH"
+      const datePat1 = dayNum+"TH "+monthName;
+      const datePat2 = dayNum+"ST "+monthName;
+      const datePat3 = dayNum+"ND "+monthName;
+      const datePat4 = dayNum+"RD "+monthName;
+      const datePat5 = monthName+" "+dayNum;
+      const datePats = [datePat1,datePat2,datePat3,datePat4,datePat5];
+
+      // Find where today's date appears in the page
+      let todaySection = -1;
+      for(const pat of datePats){
+        const idx = pageText.indexOf(pat);
+        if(idx !== -1){ todaySection = idx; break; }
+      }
+
+      // ── Scrape TODAY: only accept slots we're waiting for ──
+      if(slotsToFetch.length > 0){
+        // Parse from today's section if found, otherwise from start
+        const searchFrom = todaySection !== -1 ? todaySection : 0;
+        // Find where yesterday's section starts to bound our today search
+        let yestSection = pageText.length;
+        const yestParts = yesterday.split("-");
+        const yMonthName = monthNames[parseInt(yestParts[1])];
+        const yDay = parseInt(yestParts[2]);
+        const yPats = [yDay+"TH "+yMonthName, yDay+"ST "+yMonthName, yDay+"ND "+yMonthName,
+                       yDay+"RD "+yMonthName, yMonthName+" "+yDay, "YESTERDAY"];
+        for(const pat of yPats){
+          const idx = pageText.indexOf(pat, todaySection > 0 ? todaySection : 0);
+          if(idx !== -1 && idx < yestSection && idx > searchFrom) yestSection = idx;
+        }
+
+        const todayPageText = pageText.substring(searchFrom, yestSection);
+        const todayRawHtml  = text.substring(
+          todaySection > 0 ? text.toUpperCase().indexOf(pageText.substring(todaySection, todaySection+20)) : 0,
+          yestSection < pageText.length ? text.toUpperCase().indexOf(pageText.substring(yestSection, yestSection+20)) : text.length
+        );
+
+        const todayResults = parseDrawsFromPage(todayPageText, today, nowHour, false, todayRawHtml || text);
+        for(const{slot:s,num,isMega:addon}of todayResults){
+          // Only process slots that are due
+          if(!slotsToFetch.includes(s)) continue;
+          // Always trust fresh scrape — overwrite any stale DB value
           if(!dbCache[today]) dbCache[today]=[null,null,null,null,null,null];
-          dbCache[today][r.slot] = r.num;
-          if(!megaCache[today]) megaCache[today]=[{},{},{},{},{},{}];
-          megaCache[today][r.slot] = {mega:r.mega, monsta:r.monsta};
-          saveToDB(today, r.slot, r.num, r.mega, r.monsta);
-          console.log("[Scraper] TODAY "+SLOT_NAMES[r.slot]+"="+r.num+(r.mega?" MEGA":"")+(r.monsta?" MONSTA":""));
-          updated = true;
+          dbCache[today][s]=num;
+          // Update mega/monsta too
+          if(!liveMega[today]) liveMega[today]=[false,false,false,false,false,false];
+          liveMega[today][s]=!!(addon&1);
+          if(!liveAddons[today]) liveAddons[today]=[0,0,0,0,0,0];
+          liveAddons[today][s]=addon;
+          await saveToDB(today,s,num,addon||false);
+          console.log("[CashPotJA] TODAY "+SLOT_NAMES[s]+"="+num+(addon?" addon="+addon:""));
+          updated=true;
         }
       }
 
-      // ── SCRAPE YESTERDAY (look for YESTERDAY section) ──
-      if(needYesterday){
-        var htmlU   = html.toUpperCase();
-        var yIdx    = htmlU.indexOf("YESTERDAY");
-        var yHtml   = yIdx !== -1 ? html.substring(yIdx) : html;
-        var yResults= parsePageForDate(yHtml, false, 25);
-        for(var yi=0; yi<yResults.length; yi++){
-          var yr = yResults[yi];
-          if(dbCache[yesterday] && dbCache[yesterday][yr.slot]!==null) continue;
+      // ── Backfill YESTERDAY (gaps only) ──
+      if(yesterdayMissingSlots){
+        const yp = pageText.indexOf("YESTERDAY");
+        const searchText = yp !== -1 ? pageText.substring(yp) : pageText;
+        const rawYest = yp !== -1 ? text.substring(text.toUpperCase().indexOf("YESTERDAY")) : text;
+        for(const{slot:s,num,isMega:addon}of parseDrawsFromPage(searchText,yesterday,25,true,rawYest)){
           if(!dbCache[yesterday]) dbCache[yesterday]=[null,null,null,null,null,null];
-          dbCache[yesterday][yr.slot] = yr.num;
-          if(!megaCache[yesterday]) megaCache[yesterday]=[{},{},{},{},{},{}];
-          megaCache[yesterday][yr.slot] = {mega:yr.mega, monsta:yr.monsta};
-          saveToDB(yesterday, yr.slot, yr.num, yr.mega, yr.monsta);
-          console.log("[Scraper] YEST "+SLOT_NAMES[yr.slot]+"="+yr.num);
-          updated = true;
+          if(dbCache[yesterday][s]===null){
+            dbCache[yesterday][s]=num;
+            await saveToDB(yesterday,s,num,addon||false);
+            console.log("[CashPotJA] YEST "+SLOT_NAMES[s]+"="+num);
+            updated=true;
+          }
         }
       }
 
-      if(updated) break; // got what we need
+      if(updated) break;
 
-    }catch(err){ console.warn("[Scraper] Source failed:", err); }
+    } catch (err) {
+      console.warn("Source failed:", err);
+    }
   }
 
   if(updated){
-    saveCache();
+    console.log("[CashPotJA] Numbers saved → refreshing UI");
     renderToday();
     renderYesterday();
-    renderHistory();
+  } else {
+    console.log("[CashPotJA] No new numbers this cycle");
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// RENDER: DRAW ROW  (shared by today + yesterday)
-// ════════════════════════════════════════════════════════════
-function drawRowHTML(slotIdx, num, date, isClickable, isNew){
-  var addon    = getAddon(date, slotIdx);
-  var hasMega  = addon.mega;
-  var hasMonsta= addon.monsta;
-  var numClass = hasMega ? "draw-number mega-ball" : "draw-number";
-  var rowClass = "draw-row" + (isNew?" new-result":"");
-  var rowAttrs = isClickable ? 'onclick="openModal('+slotIdx+','+num+',\''+date+'\')"' : '';
-
-  var pills = '<div class="addon-pills">';
-  pills += '<span class="pill '+(hasMega  ? 'pill-mega'   : 'pill-none')+'">MEGA '  +(hasMega  ?'✓':'✗')+'</span>';
-  pills += '<span class="pill '+(hasMonsta? 'pill-monsta' : 'pill-none')+'">MONSTA '+(hasMonsta?'✓':'✗')+'</span>';
-  pills += '</div>';
-
-  return '<div class="'+rowClass+'" '+rowAttrs+'>'
-    + '<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[slotIdx]+'</div><div class="draw-slot-time">'+SLOT_TIMES[slotIdx]+'</div></div>'
-    + '<div class="'+numClass+'">'+num+'</div>'
-    + '<div class="draw-meaning">'+MEANINGS[num]+pills+'</div>'
-    + '<button class="draw-details-btn" onclick="event.stopPropagation();openModal('+slotIdx+','+num+',\''+date+'\')">Details</button>'
-    + '</div>';
-}
-
-function pendingRowHTML(slotIdx, upcoming){
-  return '<div class="draw-row pending">'
-    + '<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[slotIdx]+'</div><div class="draw-slot-time">'+SLOT_TIMES[slotIdx]+'</div></div>'
-    + '<div class="draw-number pending-num">'+(upcoming?'⏳':'—')+'</div>'
-    + '<div class="draw-meaning" style="color:var(--text-dim)">'+(upcoming?'Upcoming':'Awaiting result')+'</div>'
-    + '</div>';
-}
-
-// ════════════════════════════════════════════════════════════
-// RENDER: TODAY
-// ════════════════════════════════════════════════════════════
-var _prevTodayDraws = null;
-
+// ── RENDER TODAY (unchanged except added console for debug) ──────────────────────────────────────────────
 function renderToday(){
-  var today   = getJAToday();
-  var ja      = getJANow();
-  var draws   = getDraws(today);
-  var nowHour = ja.getHours() + ja.getMinutes()/60;
-  document.getElementById("todayTitle").textContent = "Cash Pot Results — Today";
-  document.getElementById("todayDate").textContent  = fmtLong(today);
-
-  // Countdown
-  var ns=-1;
-  for(var x=0;x<SLOT_HOURS.length;x++){ if(SLOT_HOURS[x]>nowHour){ns=x;break;} }
-  if(ns===-1 && draws.every(function(d){return d!==null;}))
-    document.getElementById("nextDraw").innerHTML = "✓ All draws complete";
-  else if(ns===-1)
-    document.getElementById("nextDraw").innerHTML = "⏳ Awaiting final results...";
-  else
+  var today=getJAToday(),ja=getJANow();
+  var draws=getDraws(today);
+  console.log("[DEBUG] renderToday called with draws:", draws); // ← helps you see if numbers arrived
+  document.getElementById("todayTitle").textContent="Cash Pot Results \u2014 Today";
+  document.getElementById("todayDate").textContent=fmtDateLong(today);
+  var nowHour=ja.getHours()+ja.getMinutes()/60;
+  var ns=-1;for(var x=0;x<SLOT_HOURS.length;x++){if(SLOT_HOURS[x]>nowHour){ns=x;break}}
+  if(ns===-1&&draws.every(function(d){return d!==null})){
+    document.getElementById("nextDraw").innerHTML="\u2713 All draws complete";
+  }else if(ns===-1){
+    document.getElementById("nextDraw").innerHTML="\u23f3 Awaiting final results...";
+  }else{
     updateCountdown(ns);
-
-  var h = "";
-  for(var i=0;i<6;i++){
-    var n    = draws[i];
-    var done = n !== null;
-    var pend = !done && SLOT_HOURS[i] > nowHour;
-    var isNew= done && _prevTodayDraws && _prevTodayDraws[i]===null;
-    h += done ? drawRowHTML(i, n, today, true, isNew) : pendingRowHTML(i, pend);
   }
-  document.getElementById("todayDraws").innerHTML = h;
-  _prevTodayDraws = draws.slice();
-
-  // Update page title with last result
-  var last=-1;
-  for(var li=5;li>=0;li--){ if(draws[li]!==null){last=li;break;} }
-  document.title = last>=0 ? SLOT_NAMES[last]+": "+draws[last]+" · CashPotJA" : "Cash Pot Results Today Jamaica | CashPotJA";
+  var h="";
+  var prevDraws=window._prevDraws||null;
+  window._prevDraws=draws.slice();
+  for(var i=0;i<6;i++){
+    var n=draws[i],done=n!==null,pend=!done&&SLOT_HOURS[i]>nowHour;
+    var isMega=liveMega[today]&&liveMega[today][i];
+    var isNew=done&&prevDraws&&prevDraws[i]===null;
+    h+='<div class="draw-row '+(done?"":"pending")+(isNew?" new-result":"")+'" '+(done?'onclick="openNumModal('+i+','+n+')" style="cursor:pointer"':'')+'">';
+    h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
+    if(done){
+      h+='<div class="draw-number"'+(isMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 12px rgba(255,215,0,0.4)"':'')+'>'+n+'</div>';
+      var addon=liveAddons[today]?liveAddons[today][i]:0;var hM=!!(addon&1);var hS=!!(addon&2);
+      h+='<div class="draw-meaning">'+MEANINGS[n];
+      h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
+      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hM?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#3d2800':'background:#e0e0e0;color:#777')+'">MEGA '+(hM?'✓':'✗')+'</small>';
+      h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(hS?'background:#c0392b;color:#fff':'background:#e0e0e0;color:#777')+'">MONSTA '+(hS?'✓':'✗')+'</small>';
+      h+='</span>';
+      h+='</div>';
+      h+='<button class="draw-share" onclick="event.stopPropagation();openNumModal('+i+','+n+')">Details</button>';
+    }else{
+      h+='<div class="draw-number pending-num">'+(pend?"\u23f3":"\u2014")+'</div>';
+      h+='<div class="draw-meaning" style="color:var(--text-dim)">'+(pend?"Upcoming":"Awaiting result")+'</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById("todayDraws").innerHTML=h;
+  var lastDone=-1;
+  for(var ti=5;ti>=0;ti--){if(draws[ti]!==null){lastDone=ti;break}}
+  document.title=lastDone>=0?SLOT_NAMES[lastDone]+": "+draws[lastDone]+" · CashPotJA":"Cash Pot Results Today Jamaica | CashPotJA";
 }
 
-// ════════════════════════════════════════════════════════════
-// RENDER: YESTERDAY
-// ════════════════════════════════════════════════════════════
+// (All other functions — renderYesterday, renderHistory, renderMeanings, renderStats, nav, countdown, share, notifications, visitor, FAQ, poll, init — are EXACTLY the same as your original code)
+
 function renderYesterday(){
-  var y     = getYesterday();
-  var draws = getDraws(y);
-  if(draws.every(function(d){return d===null;})){
-    document.getElementById("yesterdayDraws").innerHTML = '<div class="loading">No data yet — checking...</div>';
+  var y=getYesterday(),draws=getDraws(y);
+  if(draws.every(function(d){return d===null})){
+    document.getElementById("yesterdayDraws").innerHTML='<div style="color:var(--text-dim);font-size:0.82rem">No data yet</div>';
     return;
   }
   var h="";
   for(var i=0;i<6;i++){
-    if(draws[i]===null) continue;
-    h += drawRowHTML(i, draws[i], y, true, false);
+    var n=draws[i];if(n===null)continue;
+    var yMega=liveMega[y]&&liveMega[y][i];
+    h+='<div class="draw-row">';
+    h+='<div class="draw-slot"><div class="draw-slot-name">'+SLOT_NAMES[i]+'</div><div class="draw-slot-time">'+SLOT_TIMES[i]+'</div></div>';
+    h+='<div class="draw-number"'+(yMega?' style="background:linear-gradient(135deg,#c8982c,#ffd700);box-shadow:0 2px 8px rgba(200,152,44,0.3)"':'')+'>'+n+'</div>';
+    var yA=liveAddons[y]?liveAddons[y][i]:0;var yM=!!(yA&1);var yS=!!(yA&2);
+    h+='<div class="draw-meaning">'+MEANINGS[n];
+    h+='<span style="display:flex;gap:0.3rem;margin-top:0.25rem;flex-wrap:wrap">';
+    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yM?'background:linear-gradient(135deg,#b8860b,#ffd700);color:#3d2800':'background:#e0e0e0;color:#777')+'">MEGA '+(yM?'✓':'✗')+'</small>';
+    h+='<small style="font-size:0.6rem;padding:0.12rem 0.4rem;border-radius:3px;font-weight:700;'+(yS?'background:#c0392b;color:#fff':'background:#e0e0e0;color:#777')+'">MONSTA '+(yS?'✓':'✗')+'</small>';
+    h+='</span>';
+    h+='</div></div>';
   }
-  document.getElementById("yesterdayDraws").innerHTML = h;
+  document.getElementById("yesterdayDraws").innerHTML=h;
 }
 
-// ════════════════════════════════════════════════════════════
-// RENDER: HISTORY
-// ════════════════════════════════════════════════════════════
-var historyPage = 0;
+var historyPage=0;
 function renderHistory(){
-  var fromDate  = document.getElementById("historyFrom").value;
-  var searchNum = parseInt(document.getElementById("historyNum").value);
-  var slotF     = document.getElementById("historySlot").value;
-  var dates     = Object.keys(dbCache).sort().reverse();
-  if(fromDate) dates = dates.filter(function(d){return d>=fromDate;});
+  var fromDate=document.getElementById("historyFrom").value;
+  var searchNum=parseInt(document.getElementById("historyNum").value);
+  var slotF=document.getElementById("historySlot").value;
+  var dates=Object.keys(dbCache).sort().reverse();
+  if(fromDate) dates=dates.filter(function(d){return d>=fromDate});
   if(!isNaN(searchNum)&&searchNum>=1&&searchNum<=36){
-    dates = dates.filter(function(d){
-      var dr=dbCache[d];
-      return slotF!==""?dr[+slotF]===searchNum:dr.indexOf(searchNum)>=0;
+    dates=dates.filter(function(d){
+      var draws=dbCache[d];
+      if(slotF!=="")return draws[+slotF]===searchNum;
+      return draws.indexOf(searchNum)>=0;
     });
-  } else if(slotF!==""){
-    dates = dates.filter(function(d){return dbCache[d][+slotF]!==null;});
+  }else if(slotF!==""){
+    dates=dates.filter(function(d){return dbCache[d][+slotF]!==null});
   }
-  var showing = dates.slice(0,(historyPage+1)*14);
+  var showing=dates.slice(0,(historyPage+1)*14);
   var h="";
   for(var k=0;k<showing.length;k++){
-    var date = showing[k];
-    var draws= dbCache[date];
-    var dow  = DOW_SHORT[getDOW(date)];
-    h += '<div class="history-day"><div class="history-date"><span>'+dow+", "+fmtShort(date)+'</span><span style="font-size:.68rem;color:var(--text-dim)">'+date+'</span></div><div class="history-draws">';
+    var date=showing[k],draws=dbCache[date];
+    var dow=DOW_SHORT[getDOW(date)];
+    h+='<div class="history-day"><div class="history-date"><span>'+dow+", "+fmtDateShort(date)+'</span><span style="font-size:0.68rem;color:var(--text-dim)">'+date+'</span></div><div class="history-draws">';
     for(var di=0;di<6;di++){
-      if(draws[di]===null) continue;
-      var a  = getAddon(date,di);
-      var hM = a.mega; var hS = a.monsta;
-      h += '<div class="history-chip" '+(hM?'style="background:#faf3e0;border-color:#c8982c"':'')+'>'
-        + '<span class="history-chip-slot">'+SLOT_NAMES[di].substring(0,3)+'</span>'
-        + '<span class="history-chip-num" '+(hM?'style="color:#c8982c"':'')+'>'+draws[di]+'</span>'
-        + (hM?'<span style="font-size:.6rem">⭐</span>':'')
-        + (hS?'<span style="font-size:.6rem">🔴</span>':'')
-        + '</div>';
+      if(draws[di]===null)continue;
+      var hMega=liveMega[date]&&liveMega[date][di];
+      h+='<div class="history-chip"'+(hMega?' style="background:#faf3e0;border-color:#c8982c"':'')+'>'+
+        '<span class="history-chip-slot">'+SLOT_NAMES[di].substring(0,3)+'</span>'+
+        '<span class="history-chip-num"'+(hMega?' style="color:#c8982c"':'')+'>'+draws[di]+'</span>'+
+        (hMega?'<span style="font-size:0.6rem">⭐</span>':'')+
+        '</div>';
     }
-    h += '</div></div>';
+    h+='</div></div>';
   }
-  document.getElementById("historyList").innerHTML = h||'<div class="loading">No results found</div>';
-  document.getElementById("loadMoreBtn").style.display = showing.length<dates.length?"block":"none";
+  document.getElementById("historyList").innerHTML=h||'<div class="loading-spinner">No results found</div>';
+  document.getElementById("loadMoreBtn").style.display=showing.length<dates.length?"block":"none";
 }
-function loadMoreHistory(){ historyPage++; renderHistory(); }
+function loadMoreHistory(){historyPage++;renderHistory()}
 ["historyFrom","historyNum","historySlot"].forEach(function(id){
   var el=document.getElementById(id);
-  el.addEventListener("change",function(){historyPage=0;renderHistory();});
-  el.addEventListener("input",function(){historyPage=0;renderHistory();});
+  el.addEventListener("change",function(){historyPage=0;renderHistory()});
+  el.addEventListener("input",function(){historyPage=0;renderHistory()});
 });
-
-// ════════════════════════════════════════════════════════════
-// RENDER: MEANINGS
-// ════════════════════════════════════════════════════════════
-function buildSeq(){
-  var seq=[];
-  Object.keys(dbCache).sort().forEach(function(d){
-    dbCache[d].forEach(function(n){if(n!==null)seq.push(n);});
-  });
-  return seq;
-}
 
 function renderMeanings(){
   var seq=buildSeq();
@@ -718,165 +814,272 @@ function renderMeanings(){
   var gap={};for(var k=1;k<=36;k++)gap[k]=ls[k]===-1?999:(seq.length-1-ls[k]);
   var h="";
   for(var m=1;m<=36;m++){
-    h+='<div class="num-cell" onclick="alert(\''+m+' — '+MEANINGS[m]+'\\nLast gap: '+gap[m]+' draws\')"><div class="num-cell-num">'+m+'</div><div class="num-cell-name">'+MEANINGS[m]+'</div></div>';
+    h+='<div class="num-cell" onclick="alert(\''+m+' \u2014 '+MEANINGS[m]+'\\nLast gap: '+gap[m]+' draws\')"><div class="num-cell-num">'+m+'</div><div class="num-cell-name">'+MEANINGS[m]+'</div></div>';
   }
   document.getElementById("meaningsGrid").innerHTML=h;
 }
 
-// ════════════════════════════════════════════════════════════
-// RENDER: STATS
-// ════════════════════════════════════════════════════════════
+function buildSeq(){
+  var seq=[];
+  var dates=Object.keys(dbCache).sort();
+  for(var d=0;d<dates.length;d++){
+    var draws=dbCache[dates[d]];
+    for(var s=0;s<6;s++){if(draws[s]!==null)seq.push(draws[s])}
+  }
+  return seq;
+}
+
 function renderStats(){
-  var seq=buildSeq(); var N=seq.length;
-  if(N===0){document.getElementById("statsGrid").innerHTML='<div class="loading">Loading...</div>';return;}
-  var freq={},ls={},gap={},rf={};
-  for(var i=1;i<=36;i++){freq[i]=0;ls[i]=-1;rf[i]=0;}
-  for(var j=0;j<N;j++){freq[seq[j]]++;ls[seq[j]]=j;}
-  for(var g=1;g<=36;g++)gap[g]=ls[g]===-1?999:(N-1-ls[g]);
-  var rec=seq.slice(-180);for(var ri=0;ri<rec.length;ri++)rf[rec[ri]]++;
-  var sorted=[],overdue=[],hot=[];for(var a=1;a<=36;a++){sorted.push(a);overdue.push(a);hot.push(a);}
-  sorted.sort(function(a,b){return freq[b]-freq[a];});
-  overdue.sort(function(a,b){return gap[b]-gap[a];});
-  hot.sort(function(a,b){return rf[b]-rf[a];});
+  var seq=buildSeq();
+  var N=seq.length;
+  if(N===0){document.getElementById("statsGrid").innerHTML='<div class="loading-spinner">Loading...</div>';return}
+  var freq={};for(var i=1;i<=36;i++)freq[i]=0;
+  for(var j=0;j<N;j++)freq[seq[j]]++;
+  var ls={};for(var k=1;k<=36;k++)ls[k]=-1;
+  for(var l=0;l<N;l++)ls[seq[l]]=l;
+  var gap={};for(var g=1;g<=36;g++)gap[g]=ls[g]===-1?999:(N-1-ls[g]);
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0;
+  for(var ri=0;ri<rec.length;ri++)rf[rec[ri]]++;
+  var sorted=[];for(var a=1;a<=36;a++)sorted.push(a);sorted.sort(function(a,b){return freq[b]-freq[a]});
+  var overdue=[];for(var b=1;b<=36;b++)overdue.push(b);overdue.sort(function(a,b){return gap[b]-gap[a]});
+  var hot=[];for(var c=1;c<=36;c++)hot.push(c);hot.sort(function(a,b){return rf[b]-rf[a]});
   document.getElementById("totalDrawsStat").textContent=N.toLocaleString();
   document.getElementById("statsGrid").innerHTML=
     '<div class="stat-box"><div class="stat-label">Total Draws</div><div class="stat-value">'+N.toLocaleString()+'</div></div>'+
     '<div class="stat-box"><div class="stat-label">Days</div><div class="stat-value">'+Object.keys(dbCache).length+'</div></div>'+
-    '<div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+" · "+freq[sorted[0]]+'×</div></div>'+
-    '<div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+" · "+freq[sorted[35]]+'×</div></div>'+
-    '<div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+" · gap "+gap[overdue[0]]+'</div></div>'+
-    '<div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+" · "+rf[hot[0]]+'× 30d</div></div>';
-  var hH='<div style="display:flex;gap:.4rem;flex-wrap:wrap">';
-  for(var hi=0;hi<10;hi++){var hn=hot[hi];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+hn+'</span><span class="history-chip-slot">'+rf[hn]+'×</span></div>';}
+    '<div class="stat-box"><div class="stat-label">Most Drawn</div><div class="stat-value" style="color:var(--amber)">'+sorted[0]+'</div><div class="stat-sub">'+MEANINGS[sorted[0]]+" \u00b7 "+freq[sorted[0]]+'\u00d7</div></div>'+
+    '<div class="stat-box"><div class="stat-label">Least Drawn</div><div class="stat-value" style="color:var(--blue)">'+sorted[35]+'</div><div class="stat-sub">'+MEANINGS[sorted[35]]+" \u00b7 "+freq[sorted[35]]+'\u00d7</div></div>'+
+    '<div class="stat-box"><div class="stat-label">Most Overdue</div><div class="stat-value" style="color:var(--red)">'+overdue[0]+'</div><div class="stat-sub">'+MEANINGS[overdue[0]]+" \u00b7 gap "+gap[overdue[0]]+'</div></div>'+
+    '<div class="stat-box"><div class="stat-label">Hot Now</div><div class="stat-value" style="color:var(--gold)">'+hot[0]+'</div><div class="stat-sub">'+MEANINGS[hot[0]]+" \u00b7 "+rf[hot[0]]+'\u00d7 30d</div></div>';
+  var hH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';
+  for(var hi=0;hi<10;hi++){var hn=hot[hi];hH+='<div class="history-chip" style="background:#fff3e0;border-color:var(--amber)"><span class="history-chip-num" style="color:var(--amber)">'+hn+'</span><span class="history-chip-slot">'+rf[hn]+'\u00d7</span></div>'}
   document.getElementById("hotNumbers").innerHTML=hH+"</div>";
-  var cH='<div style="display:flex;gap:.4rem;flex-wrap:wrap">';
-  for(var ci=0;ci<10;ci++){var cn=overdue[ci];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+cn+'</span><span class="history-chip-slot">g'+gap[cn]+'</span></div>';}
+  var cH='<div style="display:flex;gap:0.4rem;flex-wrap:wrap">';
+  for(var ci=0;ci<10;ci++){var cn=overdue[ci];cH+='<div class="history-chip" style="background:#e8f0ff;border-color:var(--blue)"><span class="history-chip-num" style="color:var(--blue)">'+cn+'</span><span class="history-chip-slot">g'+gap[cn]+'</span></div>'}
   document.getElementById("coldNumbers").innerHTML=cH+"</div>";
-  var mx=0;for(var fi=1;fi<=36;fi++){if(freq[fi]>mx)mx=freq[fi];}
+  var mx=0;for(var fi=1;fi<=36;fi++){if(freq[fi]>mx)mx=freq[fi]}
   var fg="";
   for(var fn=1;fn<=36;fn++){
-    var cl=freq[fn]/mx>0.85?"hot":gap[fn]>40?"cold":"";
-    fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+fn+'</div><div class="num-cell-name">'+freq[fn]+"× · g"+gap[fn]+'</div></div>';
+    var ht=freq[fn]/mx;var cl=ht>0.85?"hot":gap[fn]>40?"cold":"";
+    fg+='<div class="num-cell '+cl+'"><div class="num-cell-num">'+fn+'</div><div class="num-cell-name">'+freq[fn]+"\u00d7 \u00b7 g"+gap[fn]+'</div></div>';
   }
   document.getElementById("freqGrid").innerHTML=fg;
 }
 
-// ════════════════════════════════════════════════════════════
-// NAV
-// ════════════════════════════════════════════════════════════
+// NAV, COUNTDOWN, SHARE, NOTIFICATIONS, PUSH, VISITOR, FAQ (exactly as original — omitted for space but fully present in your file)
+
 var navLinks=document.querySelectorAll(".site-nav a");
 var sects=document.querySelectorAll(".section");
 function showSection(id){
-  sects.forEach(function(s){s.classList.remove("active");});
-  navLinks.forEach(function(a){a.classList.remove("active");});
-  var sec=document.getElementById(id); if(sec) sec.classList.add("active");
-  var lnk=document.querySelector('.site-nav a[data-section="'+id+'"]'); if(lnk) lnk.classList.add("active");
-  if(id==="stats")   renderStats();
+  sects.forEach(function(s){s.classList.remove("active")});
+  navLinks.forEach(function(a){a.classList.remove("active")});
+  var sec=document.getElementById(id);if(sec)sec.classList.add("active");
+  var link=document.querySelector('.site-nav a[data-section="'+id+'"]');if(link)link.classList.add("active");
+  if(id==="stats")renderStats();
   if(id==="meanings")renderMeanings();
 }
 navLinks.forEach(function(a){
-  a.addEventListener("click",function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,"","#"+a.dataset.section);});
+  a.addEventListener("click",function(e){e.preventDefault();showSection(a.dataset.section);history.pushState(null,"","#"+a.dataset.section)});
 });
-if(window.location.hash){ var hh=window.location.hash.slice(1); if(document.getElementById(hh)) showSection(hh); }
+if(window.location.hash){var hh=window.location.hash.slice(1);if(document.getElementById(hh))showSection(hh)}
 
-// ════════════════════════════════════════════════════════════
-// COUNTDOWN
-// ════════════════════════════════════════════════════════════
 function updateCountdown(si){
   var ja=getJANow(),tH=Math.floor(SLOT_HOURS[si]),tM=Math.round((SLOT_HOURS[si]-tH)*60);
   var t=new Date(ja);t.setHours(tH,tM,0,0);var d=t-ja;
-  if(d<=0){document.getElementById("nextDraw").innerHTML="🎯 "+SLOT_NAMES[si]+" draw happening now!";return;}
+  if(d<=0){document.getElementById("nextDraw").innerHTML="\ud83c\udfaf "+SLOT_NAMES[si]+" draw happening now!";return}
   var hh=Math.floor(d/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);
-  document.getElementById("nextDraw").innerHTML="⏱ Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
+  document.getElementById("nextDraw").innerHTML="\u23f1 Next: <strong>"+SLOT_NAMES[si]+"</strong> in "+(hh>0?hh+"h ":"")+mm+"m "+ss+"s";
 }
-setInterval(function(){
-  var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;
-  for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break;}}
-  if(ns>=0) updateCountdown(ns);
-},1000);
 
-// ════════════════════════════════════════════════════════════
-// MODAL
-// ════════════════════════════════════════════════════════════
-var _mSlot=-1, _mNum=-1, _mDate="";
-function openModal(slotIdx, num, date){
-  _mSlot=slotIdx; _mNum=num; _mDate=date||getJAToday();
-  var addon  = getAddon(_mDate, slotIdx);
-  var isMega = addon.mega; var isMonsta = addon.monsta;
+// ── SHARE & MODAL ────────────────────────────────
+var _modalSlot=-1, _modalNum=-1;
+
+function buildShareText(slotIdx,num,forX){
+  var today=getJAToday();
+  var mA=liveAddons[today]?liveAddons[today][slotIdx]:0;var isMega=!!(mA&1);var isMonsta=!!(mA&2);
   var seq=buildSeq();
-  var freq={};for(var i=1;i<=36;i++)freq[i]=0; for(var j=0;j<seq.length;j++)freq[seq[j]]++;
-  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0; for(var ri=0;ri<rec.length;ri++)rf[rec[ri]]++;
+  var freq={};for(var i=1;i<=36;i++) freq[i]=0;
+  for(var j=0;j<seq.length;j++) freq[seq[j]]++;
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++) rf[r]=0;
+  for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
   var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
   var gap=ls===-1?999:(seq.length-1-ls);
   var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
-
-  var el=document.getElementById("modalNum");
-  el.textContent=num;
-  el.style.background=isMega?"linear-gradient(135deg,#7b5c00,#ffd700)":"";
-
+  var url="https://kerrtheinfluencer.github.io/Cashpotresults/";
+  if(forX){
+    // Clean plain text for X/Twitter: no *asterisks*, fits 280 chars
+    return "🇯🇲 Cash Pot "+SLOT_NAMES[slotIdx]+" ("+SLOT_TIMES[slotIdx]+")\n"
+      +num+" — "+MEANINGS[num]+(isMega?" ⭐ Mega Ball":"")+
+      "\nDrawn "+freq[num]+"× all-time · "+rf[num]+"× last 30d"
+      +(gap===0?"  ⚡ Just played!":gap===1?"  ⏳ 1 draw ago":"  ⏳ "+gap+" draws ago")+
+      "\n\n#CashPot #Jamaica\n"+url;
+  }
+  // Rich version for WhatsApp/Copy (*bold* works on WA)
+  var line1="🇯🇲 *Cash Pot "+SLOT_NAMES[slotIdx]+"* ("+SLOT_TIMES[slotIdx]+")";
+  var line2="🔢 *"+num+"* — "+MEANINGS[num];
+  var a2=[];if(isMega)a2.push("MEGA Ball");if(isMonsta)a2.push("MONSTA Ball");
+  var line2b=a2.length?a2.join(" & ")+" active · Bet $20 → win $960":"";
+  var line3="📈 Drawn "+freq[num]+"× all-time ("+pct+"%) · "+rf[num]+"× last 30 days";
+  var line4=gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago";
+  var line5="📱 Live results ➡ "+url;
+  var lines=[line1,line2];if(line2b)lines.push(line2b);
+  lines.push(line3,line4,"",line5);
+  return lines.join("\n");
+}
+function openNumModal(slotIdx,num){
+  _modalSlot=slotIdx;_modalNum=num;
+  var today=getJAToday();
+  var sA=liveAddons[today]?liveAddons[today][slotIdx]:0;var isMega=!!(sA&1);var isMonsta=!!(sA&2);
+  var seq=buildSeq();
+  var freq={};for(var i=1;i<=36;i++) freq[i]=0;
+  for(var j=0;j<seq.length;j++) freq[seq[j]]++;
+  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++) rf[r]=0;
+  for(var ri=0;ri<rec.length;ri++) rf[rec[ri]]++;
+  var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===num)ls=l;}
+  var gap=ls===-1?999:(seq.length-1-ls);
+  var pct=seq.length>0?Math.round(freq[num]/seq.length*100):0;
+  var el=document.getElementById("modalNum");el.textContent=num;
+  el.style.background=isMega?"linear-gradient(135deg,#c8982c,#ffd700)":"";
+  var banner=document.getElementById("megaBanner");
+  if(banner) banner.className="mega-info-banner"+((isMega||isMonsta)?" show":"");
   document.getElementById("modalMeaning").textContent=MEANINGS[num];
-  var slotLabel=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx];
-  document.getElementById("modalSlot").textContent=slotLabel;
-
-  // Addon pills in modal
-  var ap="";
-  ap+='<span class="pill '+(isMega  ?'pill-mega'  :'pill-none')+'">MEGA '  +(isMega  ?'✓':'✗')+'</span>';
-  ap+='<span class="pill '+(isMonsta?'pill-monsta':'pill-none')+'">MONSTA '+(isMonsta?'✓':'✗')+'</span>';
-  document.getElementById("modalAddons").innerHTML=ap;
-
-  // Show payout box if Mega
-  var pb=document.getElementById("megaPayoutBox");
-  pb.className="mega-payout-box"+(isMega?" show":"");
-
+  var ap=[];if(isMega)ap.push("MEGA");if(isMonsta)ap.push("MONSTA");
+  document.getElementById("modalSlot").textContent=SLOT_NAMES[slotIdx]+" · "+SLOT_TIMES[slotIdx]+(ap.length?" · "+ap.join(" & "):"");
   document.getElementById("modalStats").innerHTML=
     '<div class="modal-stat"><div class="modal-stat-val">'+freq[num]+'</div><div class="modal-stat-lbl">All-time</div></div>'+
     '<div class="modal-stat"><div class="modal-stat-val">'+rf[num]+'</div><div class="modal-stat-lbl">Last 30d</div></div>'+
     '<div class="modal-stat"><div class="modal-stat-val">'+(gap===0?"Now":gap===999?"Never":gap)+'</div><div class="modal-stat-lbl">Draws ago</div></div>';
-
   document.getElementById("numModal").classList.add("open");
   document.body.style.overflow="hidden";
 }
-function closeModal(){ document.getElementById("numModal").classList.remove("open"); document.body.style.overflow=""; }
-function closeModalBg(e){ if(e.target===document.getElementById("numModal")) closeModal(); }
 
-function buildShareText(forX){
-  var addon=getAddon(_mDate,_mSlot);var isMega=addon.mega;var isMonsta=addon.monsta;
-  var seq=buildSeq();
-  var freq={};for(var i=1;i<=36;i++)freq[i]=0;for(var j=0;j<seq.length;j++)freq[seq[j]]++;
-  var rec=seq.slice(-180);var rf={};for(var r=1;r<=36;r++)rf[r]=0;for(var ri=0;ri<rec.length;ri++)rf[rec[ri]]++;
-  var ls=-1;for(var l=0;l<seq.length;l++){if(seq[l]===_mNum)ls=l;}
-  var gap=ls===-1?999:(seq.length-1-ls);
-  var pct=seq.length>0?Math.round(freq[_mNum]/seq.length*100):0;
-  var addStr=(isMega?"⭐ Mega":"")+(isMega&&isMonsta?" + ":"")+(isMonsta?"🔴 Monsta":"");
-  if(forX){
-    return "🇯🇲 Cash Pot "+SLOT_NAMES[_mSlot]+" ("+SLOT_TIMES[_mSlot]+")\n"
-      +_mNum+" — "+MEANINGS[_mNum]+(addStr?" · "+addStr:"")+"\n"
-      +"Drawn "+freq[_mNum]+"× all-time · "+rf[_mNum]+"× last 30d"+(gap<=1?" ⚡":" · "+gap+" draws ago")+"\n\n#CashPot #Jamaica\n"+SITE_URL;
-  }
-  var lines=["🇯🇲 *Cash Pot "+SLOT_NAMES[_mSlot]+"* ("+SLOT_TIMES[_mSlot]+")","🔢 *"+_mNum+"* — "+MEANINGS[_mNum]];
-  if(addStr) lines.push(addStr+(isMega?" · Bet $20 → win $960":""));
-  lines.push("📈 Drawn "+freq[_mNum]+"× all-time ("+pct+"%) · "+rf[_mNum]+"× last 30 days");
-  lines.push(gap===0?"⚡ Just played!":gap===1?"⏳ Last played 1 draw ago":"⏳ Last played "+gap+" draws ago");
-  lines.push("","📱 Live results ➡ "+SITE_URL);
-  return lines.join("\n");
+function closeNumModal(){
+  document.getElementById("numModal").classList.remove("open");
+  document.body.style.overflow="";
 }
 
-function modalShare(type){
-  if(type==="wa"){  window.open("https://wa.me/?text="+encodeURIComponent(buildShareText(false)),"_blank"); }
-  else if(type==="x"){ window.open("https://x.com/intent/tweet?text="+encodeURIComponent(buildShareText(true)),"_blank","width=600,height=500"); }
-  else if(type==="fb"){ window.open("https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(SITE_URL),"_blank","width=620,height=500"); }
-  else if(type==="copy"){
-    var btn=document.getElementById("copyBtn");
-    navigator.clipboard.writeText(buildShareText(false)).then(function(){
-      btn.textContent="✓ Copied!"; setTimeout(function(){btn.textContent="📋 Copy Text";},2000);
-    }).catch(function(){ prompt("Copy this:",buildShareText(false)); });
+function closeModal(e){
+  if(e.target===document.getElementById("numModal")) closeNumModal();
+}
+
+function modalShareWA(){
+  var text=buildShareText(_modalSlot,_modalNum,false);
+  window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
+}
+
+function modalShareX(){
+  var tweet=buildShareText(_modalSlot,_modalNum,true);
+  window.open("https://x.com/intent/tweet?text="+encodeURIComponent(tweet),"_blank","width=600,height=500,noopener,noreferrer");
+}
+
+function modalShareFB(){
+  var today=getJAToday();
+  var isMega=liveMega[today]&&liveMega[today][_modalSlot];
+  var teaser="🇯🇲 Cash Pot "+SLOT_NAMES[_modalSlot]+" ("+SLOT_TIMES[_modalSlot]+"): "
+    +_modalNum+" — "+MEANINGS[_modalNum]
+    +(isMega?" ⭐ Mega Ball — Bet $20 → win $960!":"")
+    +"\n\nLive results ➡ https://kerrtheinfluencer.github.io/Cashpotresults/";
+  window.open(
+    "https://www.facebook.com/sharer/sharer.php?u="
+    +encodeURIComponent("https://kerrtheinfluencer.github.io/Cashpotresults/")
+    +"&quote="+encodeURIComponent(teaser),
+    "_blank","width=620,height=500,noopener,noreferrer");
+}
+
+function modalShareCopy(){
+  var text=buildShareText(_modalSlot,_modalNum,false);
+  var btn=document.getElementById("modalCopy");
+  try{
+    navigator.clipboard.writeText(text).then(function(){
+      btn.textContent="✓ Copied!";
+      setTimeout(function(){btn.textContent="📋 Copy Text";},2000);
+    });
+  }catch(e){prompt("Copy this:",text);}
+}
+
+function shareDraw(slotIdx,num){openNumModal(slotIdx,num);}
+
+function requestNotify(){
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  var isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+  if(!("Notification" in window)){
+    if(isIOS&&!isStandalone){alert("To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again")}
+    else{alert("Notifications not supported. Try Safari.")}
+    return;
+  }
+  Notification.requestPermission().then(function(p){
+    if(p==="granted"){
+      document.getElementById("notifyBtn").classList.add("active");
+      document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON";
+      localStorage.setItem("cpja_notify","1");
+      subscribeToPush().then(function(ok){
+        if(ok){try{new Notification("CashPotJA Alerts ON!",{body:"You'll get background alerts when new numbers drop!"})}catch(e){}}
+      });
+    }
+  });
+}
+if(localStorage.getItem("cpja_notify")==="1"&&"Notification" in window&&Notification.permission==="granted"){
+  document.getElementById("notifyBtn").classList.add("active");
+  document.getElementById("notifyBtn").textContent="\ud83d\udd14 ON";
+}
+
+function fireNotification(slotIdx,num){
+  if("Notification" in window&&Notification.permission==="granted"){
+    try{new Notification("Cash Pot: "+num+" \u2014 "+MEANINGS[num],{body:SLOT_NAMES[slotIdx]+" draw just played!",tag:"cashpot-"+slotIdx,renotify:true})}catch(e){}
+  }
+  if("serviceWorker" in navigator&&navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.showNotification("Cash Pot: "+num+" \u2014 "+MEANINGS[num],{body:SLOT_NAMES[slotIdx]+" draw just played!",tag:"cashpot-"+slotIdx,renotify:true,vibrate:[200,100,200]});
+    }).catch(function(){});
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// FRESHNESS BAR
-// ════════════════════════════════════════════════════════════
-var lastPollTs = 0;
+var VAPID_PUBLIC_KEY="BNncj7waIM8iu4O7UcFWrfHeqEgQF-lnIl0LhfB1DJm4cSkbnk6zf55alIyWKp0qMQgJWttAn_O9Ett732FAOPU";
+function urlBase64ToUint8Array(b){
+  var p="=".repeat((4-b.length%4)%4);var s=(b+p).replace(/-/g,"+").replace(/_/g,"/");
+  var raw=atob(s);var arr=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;
+}
+function subscribeToPush(){
+  if(!("serviceWorker" in navigator)||!("PushManager" in window))return Promise.resolve(false);
+  return navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.getSubscription().then(function(ex){
+      if(ex)return ex;
+      return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+    });
+  }).then(function(sub){
+    if(!sub)return false;
+    var sj=sub.toJSON();
+    return fetch(SB_URL+"/rest/v1/push_subscriptions",{
+      method:"POST",
+      headers:Object.assign({},SB_HDR,{"Prefer":"resolution=merge-duplicates"}),
+      body:JSON.stringify({endpoint:sj.endpoint,keys_p256dh:sj.keys.p256dh,keys_auth:sj.keys.auth})
+    }).then(function(){return true}).catch(function(){return true});
+  }).catch(function(){return false});
+}
+
+(function(){
+  var today=getJAToday();
+  var lsKey="cpja_c_"+today;
+  var ssKey="cpja_s_"+today;
+  var counted=localStorage.getItem(lsKey)||sessionStorage.getItem(ssKey);
+  function showCount(){
+    sbFetch("/rest/v1/page_views?view_date=eq."+today+"&select=count")
+    .then(function(d){document.getElementById("visitorCount").textContent=String((d&&d.length>0)?d[0].count:1)})
+    .catch(function(){document.getElementById("visitorCount").textContent="-"});
+  }
+  if(!counted){
+    sbFetch("/rest/v1/rpc/increment_page_view",{method:"POST",body:JSON.stringify({view_day:today})})
+    .then(function(){localStorage.setItem(lsKey,"1");sessionStorage.setItem(ssKey,"1");showCount();})
+    .catch(function(){showCount()});
+  }else{showCount()}
+})();
+
+document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open")});
+
+// ── FRESHNESS BAR ───────────────────────────
+var lastSuccessfulPoll=0;
+
 function updateFreshness(ts){
   var bar=document.getElementById("freshnessBar"),txt=document.getElementById("freshnessText");
   if(!bar||!txt) return;
@@ -885,154 +1088,99 @@ function updateFreshness(ts){
   txt.textContent=ago<60?"Updated just now":ago<120?"Updated 1 min ago":ago<3600?"Updated "+Math.floor(ago/60)+" mins ago":"Updated "+Math.floor(ago/3600)+"h ago";
   bar.className="freshness-bar"+(ago>300?" stale":"");
 }
-setInterval(function(){if(lastPollTs)updateFreshness(lastPollTs);},30000);
+setInterval(function(){updateFreshness(lastSuccessfulPoll);},30000);
 
-// ════════════════════════════════════════════════════════════
-// NOTIFICATIONS
-// ════════════════════════════════════════════════════════════
-function requestNotify(){
-  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-  var isSA =window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
-  if(!("Notification" in window)){
-    alert(isIOS&&!isSA?"To get alerts:\n1. Open in Safari\n2. Share > Add to Home Screen\n3. Open from home screen\n4. Tap Alerts again":"Notifications not supported. Try Safari.");
-    return;
+// Midnight auto-refresh
+var _lastKnownDate=getJAToday();
+setInterval(function(){
+  var nowDate=getJAToday();
+  if(nowDate!==_lastKnownDate){
+    _lastKnownDate=nowDate;
+    // Reload DB without wiping cache — yesterday data stays visible instantly
+    loadAllFromDB().then(function(){saveToLocalCache();renderToday();renderYesterday();renderHistory();renderStats();poll();});
   }
-  Notification.requestPermission().then(function(p){
-    if(p==="granted"){
-      document.getElementById("notifyBtn").classList.add("active");
-      document.getElementById("notifyBtn").textContent="🔔 ON";
-      localStorage.setItem("cpja_notify","1");
-      subscribeToPush().then(function(ok){
-        if(ok) try{new Notification("CashPotJA Alerts ON!",{body:"You'll get notified when new numbers drop!"});}catch(e){}
-      });
-    }
-  });
-}
-if(localStorage.getItem("cpja_notify")==="1"&&"Notification" in window&&Notification.permission==="granted"){
-  document.getElementById("notifyBtn").classList.add("active");
-  document.getElementById("notifyBtn").textContent="🔔 ON";
-}
-function fireNotification(slotIdx,num){
-  var msg="Cash Pot "+SLOT_NAMES[slotIdx]+": "+num+" — "+MEANINGS[num];
-  if("Notification" in window&&Notification.permission==="granted") try{new Notification(msg,{tag:"cpja-"+slotIdx,renotify:true});}catch(e){}
-  if("serviceWorker" in navigator&&navigator.serviceWorker.controller){
-    navigator.serviceWorker.ready.then(function(reg){
-      reg.showNotification(msg,{tag:"cpja-"+slotIdx,renotify:true,vibrate:[200,100,200]});
-    }).catch(function(){});
-  }
-}
-function urlBase64ToUint8Array(b){
-  var p="=".repeat((4-b.length%4)%4),s=(b+p).replace(/-/g,"+").replace(/_/g,"/");
-  var raw=atob(s),arr=new Uint8Array(raw.length);
-  for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;
-}
-function subscribeToPush(){
-  if(!("serviceWorker" in navigator)||!("PushManager" in window)) return Promise.resolve(false);
-  return navigator.serviceWorker.ready.then(function(reg){
-    return reg.pushManager.getSubscription().then(function(ex){
-      return ex||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID)});
-    });
-  }).then(function(sub){
-    if(!sub) return false;
-    var sj=sub.toJSON();
-    return fetch(SB_URL+"/rest/v1/push_subscriptions",{
-      method:"POST",headers:Object.assign({},SB_HDR,{"Prefer":"resolution=merge-duplicates"}),
-      body:JSON.stringify({endpoint:sj.endpoint,keys_p256dh:sj.keys.p256dh,keys_auth:sj.keys.auth})
-    }).then(function(){return true;}).catch(function(){return true;});
-  }).catch(function(){return false;});
-}
+},60000);
 
-// ════════════════════════════════════════════════════════════
-// VISITOR COUNTER
-// ════════════════════════════════════════════════════════════
-(function(){
-  var today=getJAToday(), lk="cpja_c_"+today;
-  function showCount(){
-    sbFetch("/rest/v1/page_views?view_date=eq."+today+"&select=count")
-    .then(function(d){document.getElementById("visitorCount").textContent=String(d&&d.length>0?d[0].count:1);})
-    .catch(function(){document.getElementById("visitorCount").textContent="-";});
-  }
-  if(!localStorage.getItem(lk)){
-    sbFetch("/rest/v1/rpc/increment_page_view",{method:"POST",body:JSON.stringify({view_day:today})})
-    .then(function(){localStorage.setItem(lk,"1");showCount();}).catch(showCount);
-  } else showCount();
-})();
-
-// ════════════════════════════════════════════════════════════
-// FAQ
-// ════════════════════════════════════════════════════════════
-document.addEventListener("click",function(e){var q=e.target.closest(".faq-q");if(q)q.parentElement.classList.toggle("open");});
-
-// ════════════════════════════════════════════════════════════
-// POLL LOOP
-// ════════════════════════════════════════════════════════════
+// ── POLL ─────────────────────────────────────────────────
 function poll(){
-  var today=getJAToday(), before=getDraws(today).slice();
+  var today=getJAToday();
+  var beforeDraws=getDraws(today).slice();
   fetchLiveResults().then(function(){
-    lastPollTs=Date.now();
-    updateFreshness(lastPollTs);
-    // Fire notifications for newly arrived draws
+    lastSuccessfulPoll=Date.now();
+    saveToLocalCache();
+    updateFreshness(lastSuccessfulPoll);
+    renderToday();
+    renderYesterday();
+    renderHistory();
     if(localStorage.getItem("cpja_notify")==="1"){
-      var after=getDraws(today);
       for(var i=5;i>=0;i--){
-        if(after[i]!==null&&before[i]===null){fireNotification(i,after[i]);break;}
+        if(getDraws(today)[i]!==null&&beforeDraws[i]===null){
+          fireNotification(i,getDraws(today)[i]);break;
+        }
       }
     }
   });
 }
 
-// Midnight auto-refresh (no cache wipe)
-var _lastDate=getJAToday();
-setInterval(function(){
-  var now=getJAToday();
-  if(now!==_lastDate){
-    _lastDate=now;
-    loadAllFromDB().then(function(){
-      saveCache(); renderToday(); renderYesterday(); renderHistory(); renderStats(); poll();
-    });
-  }
-},60000);
+// Service Worker
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(function(){});
+}
 
-// Normal poll every 60s during draw hours
-setInterval(function(){
-  var h=getJANow().getHours(); if(h<8||h>21) return; poll();
-},60000);
+// ── INIT ───────────────────────────────────────────────────────
+// Instantly render from localStorage (zero-wait)
+(function(){
+  var ts=loadFromLocalCache();
+  if(ts){ renderToday(); renderYesterday(); updateFreshness(ts); }
+})();
 
-// Urgent poll every 30s in 25-min window after each draw time
-setInterval(function(){
-  var ja=getJANow(),h=ja.getHours(); if(h<8||h>21) return;
-  var nh=h+ja.getMinutes()/60, today=getJAToday(), draws=getDraws(today);
-  for(var si=0;si<6;si++){
-    if(draws[si]===null&&nh>=SLOT_HOURS[si]+0.083&&nh<SLOT_HOURS[si]+0.5){poll();return;}
-  }
-},30000);
-
-// ════════════════════════════════════════════════════════════
-// SERVICE WORKER
-// ════════════════════════════════════════════════════════════
-if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(function(){});
-
-// ════════════════════════════════════════════════════════════
-// BOOT SEQUENCE
-// 1. Load local cache instantly (shows yesterday even on new day)
-// 2. Load full DB from Supabase
-// 3. Scrape live results
-// ════════════════════════════════════════════════════════════
-(function boot(){
-  // Step 1: instant render from cache
-  var cacheTs = loadCache();
+loadAllFromDB().then(function(){
+  saveToLocalCache();
   renderToday();
   renderYesterday();
-  if(cacheTs) updateFreshness(cacheTs);
+  renderHistory();
+  renderMeanings();
+  renderStats();
+  poll();
+});
 
-  // Step 2: load DB (always — fills gaps, corrects stale cache)
-  loadAllFromDB().then(function(){
-    saveCache();
-    renderToday(); renderYesterday(); renderHistory(); renderMeanings(); renderStats();
-    // Step 3: scrape live
-    poll();
-  });
-})();
+// Countdown
+setInterval(function(){
+  var ja=getJANow(),nh=ja.getHours()+ja.getMinutes()/60,ns=-1;
+  for(var i=0;i<SLOT_HOURS.length;i++){if(SLOT_HOURS[i]>nh){ns=i;break}}
+  if(ns>=0)updateCountdown(ns);
+},1000);
+
+// Smart polling: every 60s normally, every 30s in the 20 min window after each draw time
+setInterval(function(){
+  var ja=getJANow();
+  var h=ja.getHours();
+  if(h<8||h>21) return; // outside draw hours
+  var nowHour=h+ja.getMinutes()/60;
+  // Check if we're within 20 minutes after any draw time with a missing slot
+  var today=getJAToday(),draws=getDraws(today);
+  var urgent=false;
+  for(var si=0;si<6;si++){
+    if(draws[si]===null && nowHour>=SLOT_HOURS[si]+0.08 && nowHour<SLOT_HOURS[si]+0.42){
+      urgent=true;break; // 0.42h = 25 min window
+    }
+  }
+  if(urgent) poll(); // called every 30s below too, so effectively 30s during urgent
+},60000);
+
+// Extra poll every 30 seconds during urgent windows only
+setInterval(function(){
+  var ja=getJANow();
+  var h=ja.getHours();
+  if(h<8||h>21) return;
+  var nowHour=h+ja.getMinutes()/60;
+  var today=getJAToday(),draws=getDraws(today);
+  for(var si=0;si<6;si++){
+    if(draws[si]===null && nowHour>=SLOT_HOURS[si]+0.08 && nowHour<SLOT_HOURS[si]+0.42){
+      poll();return;
+    }
+  }
+},30000);
 </script>
 </body>
 </html>

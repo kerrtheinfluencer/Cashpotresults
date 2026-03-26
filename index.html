@@ -532,74 +532,85 @@ function scrapeHTML(html, isYesterday, nowHour){
 
     // ── DETECT MEGA & MONSTA ────────────────────────
     //
-    // cashpotresults.info layout per draw row:
-    //   [number td] [meaning td] [ball1 img td] [ball2 img td]
-    //   ball1 = Mega Ball:  grey img = inactive, gold/yellow img = ACTIVE
-    //   ball2 = Monsta Ball: grey img = inactive, RED img = ACTIVE
+    // cashpotresults.info structure (confirmed from debug.html output):
     //
-    // The src filenames use a consistent naming pattern.
-    // Grey ball src contains "grey" or "gray" or "white" or "000000" (black/dark).
-    // Gold ball src contains "gold" or "yellow" or "ffd" or "mega" or bright colour.
-    // Red ball src contains "red" or "ff0000" or "c00" or "monsta".
+    // Each draw row after the slot header contains:
+    //   <td class="...wpdt-bold wpdt-ff-XXXXXX...">NUMBER</td>
+    //   <td>MEANING</td>
+    //   <td class="..."><img src="..."/></td>   ← Ball 1 = MEGA
+    //   <td class="..."><img src="..."/></td>   ← Ball 2 = MONSTA
     //
-    // IMPORTANT: wpdt-ff-000001 is just the NUMBER TEXT colour class — appears on ALL
-    // numbers regardless of Mega status. Do NOT use it for Mega detection.
+    // The BALL TDs use wpdt-ff-XXXXXX colour classes:
+    //   wpdt-ff-000000 = BLACK = grey ball = INACTIVE
+    //   wpdt-ff-000001 = also appears on number td (font colour)
     //
-    // Strategy: find all <img> tags in the chunk after the number td.
-    // First img = Mega ball, Second img = Monsta ball.
-    // Check each img src for colour keywords.
+    // The ball images themselves carry the colour in their filename/path.
+    // From the site screenshot: grey ball = inactive, RED filled circle = Monsta active.
+    //
+    // DETECTION APPROACH:
+    // 1. Find all <td> tags in chunk AFTER the number+meaning (skip first 2 tds)
+    // 2. Ball td 1 = Mega: check if its img src or background differs from grey
+    // 3. Ball td 2 = Monsta: check if its img src contains red/colour indicator
+    //
+    // The site wraps ball images in <td> with inline style or class.
+    // We extract all <td>...</td> blocks after the number and check the img inside.
 
     var isMega   = false;
     var isMonsta = false;
 
-    // Find position of number td in the chunk so we only look AFTER it
-    var numTdEnd = 0;
-    var ntm = chunk.match(/<td[^>]*wpdt-bold[^>]*>\s*\d{1,2}\s*<\/td>/i);
-    if(ntm) numTdEnd = chunk.indexOf(ntm[0]) + ntm[0].length;
-
-    // Find all img tags after the number
-    var afterNum  = chunk.substring(numTdEnd);
-    var allImgs   = afterNum.match(/<img[^>]+>/gi) || [];
-
-    // Helper: is this ball src red/gold/grey?
-    function isSrcRed(src){
-      src = src.toLowerCase();
-      // Red indicators in filename or inline style
-      return /red|monsta|#?ff0000|#?c00|#?d00|#?e00/.test(src);
-    }
-    function isSrcGold(src){
-      src = src.toLowerCase();
-      // Gold/yellow/mega indicators
-      return /gold|yellow|mega|#?ffd|#?ffc|#?ffb|#?fa0|#?f90/.test(src);
-    }
-    function isSrcGrey(src){
-      src = src.toLowerCase();
-      return /grey|gray|white|silver|#?ccc|#?ddd|#?eee|#?bbb/.test(src);
+    // Split chunk into td blocks to find ball cells reliably
+    // Each draw row: [slot header] [num-td] [meaning-td] [ball1-td] [ball2-td]
+    var tdBlocks = [];
+    var tdRe = /<td[^>]*>[\s\S]*?<\/td>/gi;
+    var tdMatch;
+    while((tdMatch = tdRe.exec(chunk)) !== null){
+      tdBlocks.push(tdMatch[0]);
     }
 
-    // First img = Mega ball
-    if(allImgs.length >= 1){
-      var src1 = allImgs[0];
-      if(isSrcGold(src1)) isMega=true;
-      // If it's not clearly grey, check for non-grey = active
-      // (some sites just swap the image src entirely)
-    }
-    // Second img = Monsta ball
-    if(allImgs.length >= 2){
-      var src2 = allImgs[1];
-      if(isSrcRed(src2)) isMonsta=true;
-    }
-
-    // Fallback: if no imgs found, look at td background-colour styles
-    // Some themes inline the colour: style="background:#FF0000"
-    if(allImgs.length === 0){
-      // Find <td> cells after the meaning cell
-      var tds = afterNum.match(/<td[^>]*>/gi) || [];
-      for(var ti=0; ti<tds.length && ti<2; ti++){
-        var tdU = tds[ti].toUpperCase();
-        if(ti===0 && (tdU.indexOf("FFD700")!==-1 || tdU.indexOf("GOLD")!==-1 || tdU.indexOf("F9A")!==-1)) isMega=true;
-        if(ti===1 && (tdU.indexOf("FF0000")!==-1 || tdU.indexOf("C0392B")!==-1 || tdU.indexOf("RED")!==-1)) isMonsta=true;
+    // Find which td index has the number (wpdt-bold td)
+    var numTdIdx = -1;
+    for(var ti=0; ti<tdBlocks.length; ti++){
+      if(/wpdt-bold/i.test(tdBlocks[ti]) && />\s*\d{1,2}\s*</.test(tdBlocks[ti])){
+        numTdIdx = ti; break;
       }
+    }
+
+    // Ball1 = numTdIdx+2, Ball2 = numTdIdx+3
+    // (meaning td is at numTdIdx+1)
+    if(numTdIdx !== -1){
+      var ball1td = tdBlocks[numTdIdx+2] || "";
+      var ball2td = tdBlocks[numTdIdx+3] || "";
+
+      // Extract img src from each ball td
+      function getSrc(tdHtml){
+        var m = tdHtml.match(/src=["']([^"']+)["']/i);
+        return m ? m[1].toLowerCase() : tdHtml.toLowerCase();
+      }
+
+      var src1 = getSrc(ball1td);
+      var src2 = getSrc(ball2td);
+
+      // Mega (ball1): active if src contains gold/yellow/mega keywords
+      // OR if it does NOT contain grey/gray/000 (grey = inactive)
+      // Most reliable: check for absence of grey indicators
+      var ball1IsGrey = /grey|gray|silver|ffffff|000000|eeeeee|dddddd|cccccc/.test(src1) || src1 === "";
+      var ball1IsColoured = /gold|yellow|mega|ffd7|ffc|ffb|ffa|ff9|f90|orange|amber|ffd0|color/.test(src1);
+      if(ball1IsColoured && !ball1IsGrey) isMega = true;
+
+      // Monsta (ball2): active if src contains red keywords
+      var ball2IsRed = /red|monsta|#?ff0000|c0392|e74c|ff0|d00|c00|crimson|scarlet/.test(src2);
+      if(ball2IsRed) isMonsta = true;
+
+      // Log actual srcs for debugging
+      console.log("[Addon]", SN[sd.slot], "| ball1:", src1.split("/").pop().substring(0,40), "| ball2:", src2.split("/").pop().substring(0,40));
+      console.log("[Addon]", SN[sd.slot], "mega="+isMega, "monsta="+isMonsta);
+    } else {
+      // numTdIdx not found — fallback: scan all imgs in chunk
+      console.log("[Addon] numTd not found for", SN[sd.slot], "- checking imgs");
+      var allImgs = chunk.match(/<img[^>]+>/gi) || [];
+      console.log("[Addon] imgs:", allImgs.length, allImgs.map(function(img){
+        var m=img.match(/src=["']([^"']+)["']/i); return m?m[1].split("/").pop():"?";
+      }));
     }
 
     filled[sd.slot]=true;

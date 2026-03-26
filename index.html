@@ -339,17 +339,17 @@ function loadFromLocalCache(){
   try{
     var meta=JSON.parse(localStorage.getItem(LS_META)||"null");
     if(!meta) return false;
-    if(meta.date&&meta.date!==getJAToday()){
-      localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_META);
-      localStorage.removeItem("cpja_mega_v1");return false;
-    }
     var cached=JSON.parse(localStorage.getItem(LS_KEY)||"null");
     if(!cached) return false;
+    // Always restore cached data (even from previous day) so yesterday shows instantly
+    // DB load will overwrite/fill gaps. Never delete old cache — just let DB win.
     Object.keys(cached).forEach(function(d){if(!dbCache[d])dbCache[d]=cached[d];});
     var cachedMega=JSON.parse(localStorage.getItem("cpja_mega_v1")||"null");
     if(cachedMega) Object.keys(cachedMega).forEach(function(d){if(!liveMega[d])liveMega[d]=cachedMega[d];});
     var ca=JSON.parse(localStorage.getItem("cpja_addons_v1")||"null");
     if(ca)Object.keys(ca).forEach(function(d){if(!liveAddons[d])liveAddons[d]=ca[d];});
+    // Return false if different day — forces DB reload, but data is still pre-loaded above
+    if(meta.date&&meta.date!==getJAToday()) return false;
     return meta.saved||0;
   }catch(e){return false;}
 }
@@ -996,8 +996,16 @@ setInterval(function(){
   var nowDate=getJAToday();
   if(nowDate!==_lastKnownDate){
     _lastKnownDate=nowDate;
-    try{localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_META);}catch(e){}
-    loadAllFromDB().then(function(){saveToLocalCache();renderToday();renderYesterday();renderHistory();renderStats();});
+    // New day: reload DB (don't wipe local cache — yesterday data is still valid)
+    // The DB load will populate the new today's date and keep yesterday
+    loadAllFromDB().then(function(){
+      saveToLocalCache();
+      renderToday();
+      renderYesterday();
+      renderHistory();
+      renderStats();
+      poll(); // immediately try to get today's first draw
+    });
   }
 },60000);
 
@@ -1028,12 +1036,25 @@ if("serviceWorker" in navigator){
 }
 
 // ── INIT ───────────────────────────────────────────────────────
-// Instantly render from localStorage (zero-wait)
+// Show a loading placeholder for yesterday while DB loads
+// Try local cache first (instant render if same day)
 (function(){
   var ts=loadFromLocalCache();
-  if(ts){ renderToday(); renderYesterday(); updateFreshness(ts); }
+  // Only use cache if it was saved today AND has yesterday's data
+  var yest=getYesterday();
+  var hasYest=dbCache[yest]&&dbCache[yest].some(function(n){return n!==null;});
+  if(ts&&hasYest){
+    renderToday();
+    renderYesterday();
+    updateFreshness(ts);
+  }else if(ts){
+    // Cache exists but no yesterday — render today from cache, keep loading for yesterday
+    renderToday();
+    updateFreshness(ts);
+  }
 })();
 
+// Always load from DB on page load — this gets yesterday + today from Supabase
 loadAllFromDB().then(function(){
   saveToLocalCache();
   renderToday();
@@ -1041,7 +1062,7 @@ loadAllFromDB().then(function(){
   renderHistory();
   renderMeanings();
   renderStats();
-  poll();
+  poll(); // scrape live after DB is loaded
 });
 
 // Countdown

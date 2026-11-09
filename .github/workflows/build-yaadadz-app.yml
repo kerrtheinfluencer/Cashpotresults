@@ -1,0 +1,93 @@
+name: Build Yaad Adz app (Android)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'yaadadz-app/**'
+      - '.github/workflows/build-yaadadz-app.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get app wrapper
+        uses: actions/checkout@v4
+
+      - name: Get latest yaadadz.com site code
+        uses: actions/checkout@v4
+        with:
+          repository: kerrtheinfluencer/yaadads
+          path: site
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image library
+        run: python -m pip install pillow
+
+      - name: Restore signing key
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KS_B64" ] || [ -z "$KS_PW" ]; then
+            echo "::error::Missing secrets ANDROID_KEYSTORE_BASE64 and/or ANDROID_KEYSTORE_PASSWORD."
+            exit 1
+          fi
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/yaadadz.keystore"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/yaadadz.keystore" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASSWORD=$KS_PW" >> "$GITHUB_ENV"
+
+      - name: Package the site into the app
+        working-directory: yaadadz-app
+        run: python scripts/prepare_site.py ../site www shim/yaadadz-native.js
+
+      - name: Create the Android project
+        working-directory: yaadadz-app
+        run: |
+          npm install --no-audit --no-fund
+          npx cap add android
+          python scripts/patch_android.py android ../site/icon-512.png $((100 + ${{ github.run_number }})) 2.0.${{ github.run_number }}
+          npx cap sync android
+
+      - name: Build signed APK and AAB
+        working-directory: yaadadz-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease bundleRelease
+
+      - name: Collect outputs
+        run: |
+          mkdir -p dist
+          cp yaadadz-app/android/app/build/outputs/apk/release/app-release.apk dist/YaadAdz.apk
+          cp yaadadz-app/android/app/build/outputs/bundle/release/app-release.aab dist/YaadAdz.aab
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YaadAdz-app
+          path: dist/*
+
+      - name: Publish release (direct APK download link)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: yaadadz-app-${{ github.run_number }}
+          name: Yaad Adz app build ${{ github.run_number }}
+          body: Standalone Android app with the Yaad Adz site packaged inside. Install YaadAdz.apk.
+          files: |
+            dist/YaadAdz.apk
+            dist/YaadAdz.aab

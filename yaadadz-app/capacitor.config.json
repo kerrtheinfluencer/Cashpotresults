@@ -1,0 +1,26 @@
+{
+  "appId": "com.yaadadz.app",
+  "appName": "Yaad Adz",
+  "webDir": "www",
+  "backgroundColor": "#071b13",
+  "server": {
+    "hostname": "yaadadz.com",
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#071b13",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#071b13",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#071b13",
+      "style": "DARK"
+    }
+  }
+}

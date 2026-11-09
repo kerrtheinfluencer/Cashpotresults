@@ -25,3 +25,5 @@ GitHub builds the signed APK for you in the cloud — nothing to install locally
 - If you publish on Google Play with Play App Signing, add the SHA-256 shown under
   Play Console → App integrity → App signing to the `sha256_cert_fingerprints` list in assetlinks.json.
 - Each build gets a higher version number automatically (the workflow run number).
+
+Builds run automatically when files in this folder change, or manually from the Actions tab.

@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.yaadadz.app",
+    "sha256_cert_fingerprints": ["D7:92:D6:45:5B:4D:8F:A6:F1:E5:6A:9A:F1:AF:0A:6A:C4:26:99:0F:1C:52:BA:DD:C2:1D:7D:58:4D:EC:D6:79"]
+  }
+}]

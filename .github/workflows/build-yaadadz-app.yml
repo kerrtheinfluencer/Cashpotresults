@@ -2,11 +2,15 @@ name: Build Yaad Adz app (Android)
 
 on:
   workflow_dispatch:
+    inputs:
+      site_ref:
+        description: 'Branch of kerrtheinfluencer/yaadads to package (blank = use yaadadz-app/SITE_REF)'
+        required: false
+        default: ''
   push:
     branches: [main]
     paths:
       - 'yaadadz-app/**'
-      - '.github/workflows/build-yaadadz-app.yml'
 
 permissions:
   contents: write
@@ -18,10 +22,22 @@ jobs:
       - name: Get app wrapper
         uses: actions/checkout@v4
 
-      - name: Get latest yaadadz.com site code
+      - name: Decide which site version to package
+        id: ref
+        env:
+          INPUT_REF: ${{ inputs.site_ref }}
+        run: |
+          REF="$INPUT_REF"
+          if [ -z "$REF" ]; then REF="$(tr -d ' \r\n' < yaadadz-app/SITE_REF 2>/dev/null || true)"; fi
+          if [ -z "$REF" ]; then REF=main; fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "Packaging yaadads@$REF"
+
+      - name: Get yaadadz.com site code
         uses: actions/checkout@v4
         with:
           repository: kerrtheinfluencer/yaadads
+          ref: ${{ steps.ref.outputs.ref }}
           path: site
 
       - uses: actions/setup-node@v4
@@ -86,8 +102,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: yaadadz-app-${{ github.run_number }}
-          name: Yaad Adz app build ${{ github.run_number }}
-          body: Standalone Android app with the Yaad Adz site packaged inside. Install YaadAdz.apk.
+          name: Yaad Adz app build ${{ github.run_number }} (site ${{ steps.ref.outputs.ref }})
+          prerelease: ${{ steps.ref.outputs.ref != 'main' }}
+          body: Standalone Android app with the Yaad Adz site packaged inside (site version ${{ steps.ref.outputs.ref }}). Install YaadAdz.apk.
           files: |
             dist/YaadAdz.apk
             dist/YaadAdz.aab
